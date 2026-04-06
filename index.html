@@ -17,6 +17,8 @@
     --text: #f0f0f0;
     --muted: #888;
     --radius: 16px;
+    --shadow-glow: 0 0 30px rgba(245, 230, 66, 0.25);
+    --shadow-glow-green: 0 0 30px rgba(66, 245, 161, 0.25);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -30,20 +32,63 @@
       linear-gradient(90deg, rgba(245,230,66,.04) 1px, transparent 1px);
     background-size: 40px 40px; pointer-events: none; z-index: 0;
   }
-  .wrap { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+  .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
 
-  header { text-align: center; margin-bottom: 15px; }
+  header { text-align: center; margin-bottom: 20px; position: relative; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
   .logo {
     display: inline-block; font-family: 'Unbounded', sans-serif;
     font-weight: 900; font-size: clamp(28px,5vw,42px);
-    letter-spacing: -2px; color: var(--text); margin-bottom: 8px;
+    letter-spacing: -2px; color: var(--text); margin-bottom: 6px;
   }
   .logo span { color: var(--accent); }
-  .subtitle { font-size: 14px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+  .subtitle { font-size: 13px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+  
+  /* Header controls */
+  .header-controls {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    display: flex; align-items: center; gap: 8px;
+  }
+  
+  /* Quick toggle for questions */
+  .quick-toggle {
+    display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 100px; cursor: pointer; transition: all .2s;
+    user-select: none;
+  }
+  .quick-toggle:hover { border-color: var(--accent2); }
+  .quick-toggle.active { border-color: var(--accent2); background: rgba(66,245,161,.1); }
+  
+  .quick-toggle-label {
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    font-family: 'Unbounded'; text-transform: uppercase; letter-spacing: .08em;
+  }
+  .quick-toggle.active .quick-toggle-label { color: var(--accent2); }
+  
+  .mini-toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+  .mini-toggle input { opacity: 0; width: 0; height: 0; }
+  .mini-slider {
+    position: absolute; inset: 0; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 11px; transition: .25s; cursor: pointer;
+  }
+  .mini-slider::before {
+    content: ''; position: absolute; width: 14px; height: 14px;
+    left: 3px; bottom: 3px; background: var(--muted); border-radius: 50%; transition: .25s;
+  }
+  .mini-toggle input:checked + .mini-slider { background: var(--accent2); border-color: var(--accent2); }
+  .mini-toggle input:checked + .mini-slider::before { transform: translateX(18px); background: #0f0f0f; }
+
+  .settings-gear {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--surface); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all .2s; font-size: 18px;
+  }
+  .settings-gear:hover { border-color: var(--accent); color: var(--accent); transform: rotate(30deg); }
 
   .tabs {
     display: flex; gap: 4px; background: var(--surface);
-    border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 32px;
+    border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 28px;
   }
   .tab {
     flex: 1; padding: 10px; border: none; background: transparent; color: var(--muted);
@@ -70,6 +115,7 @@
     outline: none; resize: vertical; transition: border-color .2s; min-height: 180px;
   }
   textarea:focus { border-color: var(--accent); }
+  #s-textarea { min-height: 350px; }
 
   select, input[type="number"] {
     background: var(--surface2); border: 1px solid var(--border);
@@ -109,20 +155,6 @@
   .class-tag.active { background: var(--accent); color: #0f0f0f; border-color: var(--accent); }
   .class-tag:hover:not(.active) { border-color: var(--accent); color: var(--text); }
 
-  .toggle-wrap { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--text); cursor: pointer; }
-  .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .slider {
-    position: absolute; inset: 0; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 12px; transition: .25s; cursor: pointer;
-  }
-  .slider::before {
-    content: ''; position: absolute; width: 16px; height: 16px;
-    left: 3px; bottom: 3px; background: var(--muted); border-radius: 50%; transition: .25s;
-  }
-  .toggle input:checked + .slider { background: var(--accent); border-color: var(--accent); }
-  .toggle input:checked + .slider::before { transform: translateX(20px); background: #0f0f0f; }
-
   .badge {
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 22px; height: 22px; padding: 0 6px; background: var(--accent); color: #0f0f0f;
@@ -130,9 +162,9 @@
   }
   .row-space { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 
-  /* ── DRUM ── */
-  .spin-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
-  @media(max-width:640px){ .spin-layout { grid-template-columns: 1fr; } }
+  /* ── SPIN LAYOUT ── */
+  .spin-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; align-items: start; }
+  @media(max-width:900px){ .spin-layout { grid-template-columns: 1fr; } }
 
   .drum-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -140,7 +172,7 @@
   }
 
   .drum-outer {
-    width: 220px; height: 220px; border-radius: 50%;
+    width: 200px; height: 200px; border-radius: 50%;
     position: relative; overflow: hidden;
     background: var(--surface2); border: 3px solid var(--border); flex-shrink: 0;
   }
@@ -200,60 +232,146 @@
 
   .big-spin {
     width: 100%; padding: 18px;
-    font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 900; letter-spacing: .04em;
+    font-family: 'Unbounded', sans-serif; font-size: 18px; font-weight: 900; letter-spacing: .04em;
     background: var(--accent); color: #0f0f0f; border: none; border-radius: 12px;
     cursor: pointer; transition: background .15s, transform .1s;
+    box-shadow: var(--shadow-glow);
   }
-  .big-spin:disabled { opacity: .35; cursor: default; }
+  .big-spin:disabled { opacity: .35; cursor: default; box-shadow: none; }
+  .big-spin:not(:disabled):hover { transform: scale(1.02); }
 
-  /* ── RESULT & QUESTION ── */
+  /* ── RESULT & QUESTION - HERO STYLE ── */
   .result-panel {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 24px;
-    display: flex; flex-direction: column; gap: 16px;
+    border-radius: var(--radius); padding: 28px;
+    display: flex; flex-direction: column; gap: 20px;
   }
-  .result-box {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 24px; text-align: center; min-height: 120px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-  }
-  .result-box.revealed { border-color: var(--accent); background: rgba(245,230,66,.05); }
-  .result-name {
-    font-family: 'Unbounded', sans-serif; font-size: clamp(18px,4vw,28px); font-weight: 900;
-    color: var(--accent); line-height: 1.2; opacity: 0; transform: scale(.8);
-    transition: opacity .3s .1s, transform .3s .1s;
-  }
-  .result-box.revealed .result-name { opacity: 1; transform: scale(1); }
-
-  .question-box {
-    background: rgba(66,245,161,.06); border: 1px solid rgba(66,245,161,.25);
-    border-radius: 12px; padding: 20px; line-height: 1.6; color: var(--text);
-    display: none;
-  }
-  .question-box.show { display: block; }
   
+  .hero-result {
+    background: linear-gradient(135deg, rgba(245,230,66,.08), rgba(66,245,161,.08));
+    border: 2px solid var(--accent); border-radius: 20px;
+    padding: 32px 24px; text-align: center; min-height: 160px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    position: relative; overflow: hidden;
+  }
+  .hero-result::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(245,230,66,.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-result.revealed { border-color: var(--accent); animation: pulse-glow 1.5s ease-in-out; }
+  @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 20px rgba(245,230,66,.3); } 50% { box-shadow: 0 0 40px rgba(245,230,66,.6); } }
+  
+  .result-label {
+    font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; 
+    color: var(--muted); font-family: 'Unbounded'; z-index: 1;
+  }
+  .result-name {
+    font-family: 'Unbounded', sans-serif; font-size: clamp(28px,6vw,48px); font-weight: 900;
+    color: var(--accent); line-height: 1.1; opacity: 0; transform: scale(.7) translateY(20px);
+    transition: opacity .4s .1s, transform .4s .1s; z-index: 1;
+    text-shadow: 0 4px 20px rgba(245, 230, 66, 0.5);
+  }
+  .hero-result.revealed .result-name { opacity: 1; transform: scale(1) translateY(0); }
+
+  .hero-question {
+    background: linear-gradient(135deg, rgba(66,245,161,.12), rgba(66,245,161,.04));
+    border: 2px solid var(--accent2); border-radius: 16px;
+    padding: 24px; line-height: 1.5; color: var(--text);
+    display: none; position: relative;
+  }
+  .hero-question::before {
+    content: '"'; position: absolute; top: -10px; left: 16px;
+    font-family: 'Unbounded'; font-size: 60px; color: var(--accent2); opacity: .2;
+  }
+  .hero-question.show { display: block; animation: slide-up .3s ease-out; }
+  @keyframes slide-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .question-label {
+    font-size: 10px; font-weight: 700; color: var(--accent2); font-family: 'Unbounded'; 
+    margin-bottom: 8px; text-transform: uppercase; letter-spacing: .15em;
+  }
   #question-text {
-    font-size: 22px; 
-    font-weight: 600;
-    margin-top: 10px;
-    color: var(--text);
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    font-size: clamp(18px,3vw,24px); font-weight: 600; color: var(--text);
   }
   
   /* ── TIMER ── */
   .timer-box {
     background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px; display: none; flex-direction: column; align-items: center; gap: 10px;
+    border-radius: 16px; padding: 20px; display: none; flex-direction: column; align-items: center; gap: 14px;
   }
-  .timer-box.show { display: flex; }
+  .timer-box.show { display: flex; animation: slide-up .3s ease-out; }
   .timer-display {
-    font-family: 'Unbounded', sans-serif; font-size: 32px; font-weight: 700; color: var(--accent2);
-    text-shadow: 0 0 15px rgba(66, 245, 161, 0.3);
+    font-family: 'Unbounded', sans-serif; font-size: clamp(36px,8vw,56px); font-weight: 900; 
+    color: var(--accent2); text-shadow: 0 0 25px rgba(66, 245, 161, 0.4);
+    letter-spacing: -2px;
   }
-  .timer-display.warning { color: var(--red); animation: pulse 0.5s infinite; }
-  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-  .timer-controls { display: flex; gap: 8px; width: 100%; }
-  .timer-controls .btn { flex: 1; padding: 8px; font-size: 12px; }
+  .timer-display.warning { color: var(--red); animation: pulse 0.4s infinite; text-shadow: 0 0 25px rgba(255, 77, 77, 0.5); }
+  @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: .85; transform: scale(1.03); } 100% { opacity: 1; transform: scale(1); } }
+  .timer-controls { display: flex; gap: 10px; width: 100%; }
+  .timer-controls .btn { flex: 1; padding: 10px 14px; font-size: 13px; font-weight: 700; }
+
+  /* ── SETTINGS MODAL ── */
+  .settings-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,.7); 
+    display: none; align-items: center; justify-content: center; z-index: 1000;
+    backdrop-filter: blur(4px);
+  }
+  .settings-modal.show { display: flex; animation: fade-in .2s ease-out; }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  
+  .settings-content {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 28px; max-width: 480px; width: 92%;
+    position: relative; animation: pop-in .25s ease-out;
+  }
+  @keyframes pop-in { from { opacity: 0; transform: scale(.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  
+  .settings-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;
+    padding-bottom: 16px; border-bottom: 1px solid var(--border);
+  }
+  .settings-title {
+    font-family: 'Unbounded'; font-size: 18px; font-weight: 700; color: var(--accent);
+  }
+  .settings-close {
+    width: 32px; height: 32px; border-radius: 50%; border: none;
+    background: var(--surface2); color: var(--text); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s; font-size: 18px;
+  }
+  .settings-close:hover { background: var(--accent); color: #0f0f0f; }
+  
+  .settings-group { margin-bottom: 24px; }
+  .settings-group-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 14px; font-family: 'Unbounded';
+  }
+  
+  .setting-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-label { font-size: 14px; color: var(--text); }
+  .setting-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  
+  .toggle-wrap { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--text); cursor: pointer; }
+  .toggle { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 13px; transition: .25s; cursor: pointer;
+  }
+  .slider::before {
+    content: ''; position: absolute; width: 18px; height: 18px;
+    left: 3px; bottom: 3px; background: var(--muted); border-radius: 50%; transition: .25s;
+  }
+  .toggle input:checked + .slider { background: var(--accent); border-color: var(--accent); }
+  .toggle input:checked + .slider::before { transform: translateX(22px); background: #0f0f0f; }
+  
+  .timer-select-wrap { display: flex; align-items: center; gap: 10px; }
+  .timer-select-wrap select { flex: 1; padding: 8px 12px; font-size: 14px; }
 
   /* ── GROUPS ── */
   .group-results {
@@ -273,14 +391,29 @@
 
   .status-msg { font-size: 13px; color: var(--muted); text-align: center; min-height: 20px; }
   .class-manager { display: flex; gap: 8px; margin-bottom: 16px; }
+  
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <header>
-    <div class="logo"><span>Клас</span>на Рулетка</div>
-    <div class="subtitle">Випадковий вибір учня · Групування · Таймер</div>
+    <div class="logo"><span>Клас</span>на👍 Рулетка</div>
+
+    
+    <div class="header-controls">
+      <!-- Quick toggle for questions -->
+      <label class="quick-toggle" id="quick-questions-toggle" title="Показувати запитання">
+        <span class="quick-toggle-label">Запитання</span>
+        <span class="mini-toggle">
+          <input type="checkbox" id="toggle-questions-quick" onchange="toggleQuestionsQuick()">
+          <span class="mini-slider"></span>
+        </span>
+      </label>
+      
+      <!-- Settings gear -->
+      <button class="settings-gear" onclick="openSettings()" title="Налаштування">⚙️</button>
+    </div>
   </header>
 
   <div class="tabs">
@@ -298,7 +431,7 @@
           <div class="class-tags" id="quick-class-tags"></div>
         </div>
 
-        <div style="position:relative; width:220px; height:220px; flex-shrink:0; margin-top:10px;">
+        <div style="position:relative; width:200px; height:200px; flex-shrink:0; margin-top:10px;">
           <div class="drum-ring-wrap" id="drum-ring">
             <div class="drum-ring-inner"></div>
           </div>
@@ -316,48 +449,23 @@
       </div>
 
       <div class="result-panel">
-        <div class="result-box" id="result-box">
-          <div style="font-size:10px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); font-family:'Unbounded';">Обраний учень</div>
+        <div class="hero-result" id="result-box">
+          <div class="result-label">✨ Обраний учень</div>
           <div class="result-name" id="result-name">—</div>
+        </div>
+
+        <div class="hero-question" id="question-box">
+          <div class="question-label">❓ Запитання</div>
+          <div id="question-text"></div>
         </div>
 
         <div class="timer-box" id="timer-box">
           <div class="timer-display" id="timer-display">00:30</div>
           <div class="timer-controls">
-            <button class="btn btn-accent" id="timer-start-btn" onclick="toggleTimer()">СТАРТ</button>
-            <button class="btn btn-ghost" onclick="resetTimer()">СКИД</button>
+            <button class="btn btn-accent" id="timer-start-btn" onclick="toggleTimer()">▶ СТАРТ</button>
+            <button class="btn btn-ghost" onclick="resetTimer()">↺ СКИД</button>
           </div>
         </div>
-
-        <div class="question-box" id="question-box">
-          <div style="font-size:10px; font-weight:700; color:var(--accent2); font-family:'Unbounded'; margin-bottom:6px;">ЗАПИТАННЯ</div>
-          <div id="question-text"></div>
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:12px; background: var(--surface2); padding: 16px; border-radius: 12px; border: 1px solid var(--border);">
-          <label class="toggle-wrap">
-            <span class="toggle"><input type="checkbox" id="toggle-repeat" onchange="updateAll(); saveToStorage();"><span class="slider"></span></span>
-            Повторно викликати опитаних
-          </label>
-          <label class="toggle-wrap">
-            <span class="toggle"><input type="checkbox" id="toggle-questions" onchange="saveToStorage();"><span class="slider"></span></span>
-            Показувати запитання
-          </label>
-          <label class="toggle-wrap">
-            <span class="toggle"><input type="checkbox" id="toggle-timer-auto" checked onchange="saveToStorage();"><span class="slider"></span></span>
-            Використовувати таймер
-          </label>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span style="font-size:13px; color:var(--muted)">Час:</span>
-            <select id="timer-duration" style="flex:1; padding:6px;" onchange="resetTimer(); saveToStorage();">
-                <option value="15">15 сек</option>
-                <option value="30" selected>30 сек</option>
-                <option value="60">1 хв</option>
-                <option value="120">2 хв</option>
-            </select>
-          </div>
-        </div>
-        <button class="btn btn-ghost" style="font-size:11px;" onclick="clearAsked()">Скинути список опитаних</button>
       </div>
     </div>
   </div>
@@ -374,7 +482,7 @@
     </div>
     
     <div class="card">
-      <div class="row-space"><div class="card-title">Учні в класі <span class="badge" id="student-count">0</span></div></div>
+      <div class="row-space"><div class="card-title">Активні учні: <span class="card-title" id="student-count"/span></div></div>
       <div class="chips" id="chips"></div>
     </div>
 
@@ -398,10 +506,64 @@
   </div>
 </div>
 
+<!-- SETTINGS MODAL -->
+<div class="settings-modal" id="settings-modal" onclick="if(event.target===this)closeSettings()">
+  <div class="settings-content">
+    <div class="settings-header">
+      <div class="settings-title">⚙️ Налаштування</div>
+      <button class="settings-close" onclick="closeSettings()">×</button>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-group-title">Поведінка рулетки</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Повторно викликати опитаних</div>
+          <div class="setting-desc">Дозволити вибір учнів, які вже відповідали</div>
+        </div>
+        <label class="toggle-wrap">
+          <span class="toggle"><input type="checkbox" id="toggle-repeat" onchange="saveToStorage()"><span class="slider"></span></span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-group-title">Таймер</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Режим таймера</div>
+          <div class="setting-desc">Автоматично показувати таймер після вибору</div>
+        </div>
+        <label class="toggle-wrap">
+          <span class="toggle"><input type="checkbox" id="toggle-timer-auto" onchange="saveToStorage()"><span class="slider"></span></span>
+        </label>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Тривалість таймера</div>
+          <div class="setting-desc">Час на відповідь після вибору учня</div>
+        </div>
+        <div class="timer-select-wrap">
+          <select id="timer-duration" onchange="resetTimer(); saveToStorage();">
+            <option value="15">15 сек</option>
+            <option value="30" selected>30 сек</option>
+            <option value="60">1 хв</option>
+            <option value="120">2 хв</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <div style="padding-top: 16px; border-top: 1px solid var(--border);">
+      <button class="btn btn-red" style="width:100%" onclick="clearAsked()">🗑️ Скинути список опитаних</button>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
 const IH = 44;       
-const DCENTER = 110; 
+const DCENTER = 100; 
 
 let classesData = JSON.parse(localStorage.getItem('roulette_classes')) || { "Мій Клас": [] };
 let currentClass = localStorage.getItem('roulette_current_class') || Object.keys(classesData)[0];
@@ -424,10 +586,9 @@ function saveToStorage() {
   askedData[currentClass] = [...asked];
   localStorage.setItem('roulette_asked', JSON.stringify(askedData));
 
-  // Зберігаємо стан налаштувань
   const settings = {
     repeat: document.getElementById('toggle-repeat').checked,
-    questions: document.getElementById('toggle-questions').checked,
+    questions: document.getElementById('toggle-questions-quick').checked,
     timerAuto: document.getElementById('toggle-timer-auto').checked,
     timerDuration: document.getElementById('timer-duration').value
   };
@@ -437,11 +598,28 @@ function saveToStorage() {
 function loadSettings() {
   const s = JSON.parse(localStorage.getItem('roulette_settings'));
   if (s) {
-    document.getElementById('toggle-repeat').checked = s.repeat;
-    document.getElementById('toggle-questions').checked = s.questions;
-    document.getElementById('toggle-timer-auto').checked = s.timerAuto;
-    document.getElementById('timer-duration').value = s.timerDuration;
+    document.getElementById('toggle-repeat').checked = s.repeat ?? true;
+    document.getElementById('toggle-questions-quick').checked = s.questions ?? true;
+    document.getElementById('toggle-timer-auto').checked = s.timerAuto ?? true;
+    document.getElementById('timer-duration').value = s.timerDuration ?? '30';
   }
+  // Sync quick toggle visual state
+  syncQuickToggleVisual();
+}
+
+function syncQuickToggleVisual() {
+  const quickToggle = document.getElementById('quick-questions-toggle');
+  const isChecked = document.getElementById('toggle-questions-quick').checked;
+  if (isChecked) {
+    quickToggle.classList.add('active');
+  } else {
+    quickToggle.classList.remove('active');
+  }
+}
+
+function toggleQuestionsQuick() {
+  syncQuickToggleVisual();
+  saveToStorage();
 }
 
 function switchTab(id, btn) {
@@ -517,13 +695,18 @@ function deleteClass() {
   }
 }
 
-function clearAsked() { asked.clear(); saveToStorage(); updateAll(); }
+function clearAsked() { 
+  asked.clear(); 
+  saveToStorage(); 
+  updateAll(); 
+  closeSettings();
+}
 
 function renderChips() {
   const el = document.getElementById('chips');
   const students = classesData[currentClass] || [];
   document.getElementById('student-count').textContent = students.length;
-  if (!students.length) { el.innerHTML = '<div class="empty">Список порожній.</div>'; return; }
+  if (!students.length) { el.innerHTML = '<div class="empty" style="color:var(--muted)">Список порожній.</div>'; return; }
   el.innerHTML = students.map(s => `<div class="chip ${asked.has(s) ? 'asked' : ''}">${asked.has(s) ? '✓ ' : ''}${s}</div>`).join('');
 }
 
@@ -537,7 +720,7 @@ function updateStatus() {
   const btn = document.getElementById('spin-btn');
   const msg = document.getElementById('status-msg');
   btn.disabled = !avail.length;
-  msg.textContent = avail.length ? `Доступно учнів: ${avail.length}` : "Всі опитані!";
+  msg.textContent = avail.length ? `Доступно: ${avail.length} учнів` : "✅ Всі опитані!";
 }
 
 function setTop(scrollPx) {
@@ -573,7 +756,7 @@ function resetTimer() {
   timerRunning = false;
   timeLeft = parseInt(document.getElementById('timer-duration').value);
   updateTimerDisplay();
-  document.getElementById('timer-start-btn').textContent = "СТАРТ";
+  document.getElementById('timer-start-btn').textContent = "▶ СТАРТ";
   document.getElementById('timer-display').classList.remove('warning');
 }
 
@@ -586,9 +769,9 @@ function updateTimerDisplay() {
 function toggleTimer() {
   if (timerRunning) {
     clearInterval(timerInterval);
-    document.getElementById('timer-start-btn').textContent = "ПРОДОВЖИТИ";
+    document.getElementById('timer-start-btn').textContent = "▶ ПРОДОВЖИТИ";
   } else {
-    document.getElementById('timer-start-btn').textContent = "ПАУЗА";
+    document.getElementById('timer-start-btn').textContent = "⏸ ПАУЗА";
     timerInterval = setInterval(() => {
       timeLeft--;
       if (timeLeft <= 5) document.getElementById('timer-display').classList.add('warning');
@@ -632,7 +815,9 @@ function doSpin() {
   document.getElementById('result-box').classList.remove('revealed');
   document.getElementById('question-box').classList.remove('show');
   document.getElementById('timer-box').classList.remove('show');
+  document.getElementById('result-name').textContent = '...';
   document.getElementById('drum-ring').classList.add('go');
+  
   const targetIdx = Math.floor(Math.random() * avail.length);
   const targetName = avail[targetIdx];
   const laps = 5 + Math.floor(Math.random() * 3);
@@ -640,6 +825,7 @@ function doSpin() {
   const duration = 3000;
   const easeOut = t => 1 - Math.pow(1 - t, 4);
   let startTs = null;
+  
   function step(ts) {
     if (!startTs) startTs = ts;
     const progress = Math.min((ts - startTs) / duration, 1);
@@ -657,17 +843,37 @@ function finishSpin(winner) {
   document.getElementById('drum-ring').classList.remove('go');
   asked.add(winner);
   saveToStorage();
+  
+  // Show result with animation
   document.getElementById('result-name').textContent = winner;
   document.getElementById('result-box').classList.add('revealed');
-  if (document.getElementById('toggle-questions').checked && questions.length) {
+  
+  // Show question if enabled (using quick toggle)
+  if (document.getElementById('toggle-questions-quick').checked && questions.length) {
     document.getElementById('question-text').textContent = questions[Math.floor(Math.random() * questions.length)];
     document.getElementById('question-box').classList.add('show');
   }
+  
+  // Show timer if enabled
   if (document.getElementById('toggle-timer-auto').checked) {
     document.getElementById('timer-box').classList.add('show');
   }
+  
   setTimeout(() => { renderChips(); updateStatus(); }, 1200); 
 }
+
+// SETTINGS MODAL
+function openSettings() {
+  document.getElementById('settings-modal').classList.add('show');
+}
+function closeSettings() {
+  document.getElementById('settings-modal').classList.remove('show');
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeSettings();
+});
 
 // INIT
 loadSettings();

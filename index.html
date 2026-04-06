@@ -392,6 +392,49 @@
   .status-msg { font-size: 13px; color: var(--muted); text-align: center; min-height: 20px; }
   .class-manager { display: flex; gap: 8px; margin-bottom: 16px; }
   
+  /* ── FOOTER ── */
+.site-footer {
+  text-align: center; padding: 20px 24px 32px;
+  color: var(--muted); font-size: 12px;
+  font-family: 'Inter', sans-serif;
+}
+.footer-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  transition: all .2s ease;
+  cursor: default;
+}
+.footer-badge:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(245, 230, 66, 0.15);
+}
+.footer-badge a {
+  color: var(--accent2);
+  text-decoration: none;
+  font-weight: 600;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  letter-spacing: .05em;
+  transition: color .2s;
+}
+.footer-badge a:hover {
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(245, 230, 66, 0.4);
+}
+.footer-divider {
+  color: var(--border);
+  margin: 0 4px;
+  font-weight: 300;
+}
+.footer-hint {
+  margin-top: 10px;
+  font-size: 11px;
+  opacity: .7;
+}
+  
 </style>
 </head>
 <body>
@@ -883,5 +926,21 @@ renderClassSelect();
 updateAll();
 resetTimer();
 </script>
+  
+  <footer class="site-footer">
+    Автор: <a href="https://codenamexxv.github.io/teacher/" target="_blank">Ігор Шуляк</a>
+    <span style="margin:0 4px">•</span>
+    <span id="footer-year"></span>
+  </footer>
+
+  <script>
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+  </script>
+
+  <script>
+    // Автоматичний рік у футері
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+  </script>
+  
 </body>
 </html>

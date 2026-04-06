@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Класна рулетка</title>
+<title>Класна рулетка + Таймер</title>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -67,7 +67,7 @@
     width: 100%; background: var(--surface2); border: 1px solid var(--border);
     border-radius: 10px; padding: 14px 16px; color: var(--text);
     font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.8;
-    outline: none; resize: vertical; transition: border-color .2s; min-height: 380px;
+    outline: none; resize: vertical; transition: border-color .2s; min-height: 180px;
   }
   textarea:focus { border-color: var(--accent); }
 
@@ -99,6 +99,16 @@
   }
   .chip.asked { background: rgba(66,245,161,.1); border-color: var(--accent2); color: var(--accent2); }
 
+  /* ТЕГИ КЛАСІВ */
+  .class-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-width: 100%; }
+  .class-tag {
+    padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600;
+    background: var(--surface2); border: 1px solid var(--border); cursor: pointer;
+    transition: all .2s; color: var(--muted); white-space: nowrap;
+  }
+  .class-tag.active { background: var(--accent); color: #0f0f0f; border-color: var(--accent); }
+  .class-tag:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+
   .toggle-wrap { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--text); cursor: pointer; }
   .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
   .toggle input { opacity: 0; width: 0; height: 0; }
@@ -113,13 +123,6 @@
   .toggle input:checked + .slider { background: var(--accent); border-color: var(--accent); }
   .toggle input:checked + .slider::before { transform: translateX(20px); background: #0f0f0f; }
 
-  .q-list { display: flex; flex-direction: column; gap: 8px; }
-  .q-item {
-    display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px;
-    background: var(--surface2); border-radius: 10px; border: 1px solid var(--border);
-    font-size: 14px; line-height: 1.5;
-  }
-  .empty { text-align: center; padding: 24px; color: var(--muted); font-size: 14px; width: 100%; }
   .badge {
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 22px; height: 22px; padding: 0 6px; background: var(--accent); color: #0f0f0f;
@@ -289,9 +292,13 @@
   <div class="panel active" id="tab-spin">
     <div class="spin-layout">
       <div class="drum-card">
-        <div style="font-size: 12px; color: var(--accent); font-family: 'Unbounded'; text-transform: uppercase;" id="active-class-title">Клас: —</div>
         
-        <div style="position:relative; width:220px; height:220px; flex-shrink:0;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
+          <span style="font-size: 12px; color: var(--accent); font-family: 'Unbounded'; text-transform: uppercase;">Клас:</span>
+          <div class="class-tags" id="quick-class-tags"></div>
+        </div>
+
+        <div style="position:relative; width:220px; height:220px; flex-shrink:0; margin-top:10px;">
           <div class="drum-ring-wrap" id="drum-ring">
             <div class="drum-ring-inner"></div>
           </div>
@@ -386,8 +393,7 @@
   <div class="panel" id="tab-questions">
     <div class="card">
       <div class="card-title">Банк запитань</div>
-      <textarea id="q-textarea" placeholder="Введіть запитання (кожне з нового рядка)..."></textarea>
-    </div>
+      <textarea id="q-textarea" placeholder="Введіть запитання (кожне з нового рядка)..." style="min-height: 400px;"></textarea>
     </div>
   </div>
 </div>
@@ -400,7 +406,7 @@ const DCENTER = 110;
 let classesData = JSON.parse(localStorage.getItem('roulette_classes')) || { "Мій Клас": [] };
 let currentClass = localStorage.getItem('roulette_current_class') || Object.keys(classesData)[0];
 let questions = JSON.parse(localStorage.getItem('roulette_questions')) || [];
-let askedData = JSON.parse(localStorage.getItem('roulette_asked')) || {};
+let askedData = {};
 
 if (!askedData[currentClass]) askedData[currentClass] = [];
 let asked = new Set(askedData[currentClass]);
@@ -418,7 +424,7 @@ function saveToStorage() {
   askedData[currentClass] = [...asked];
   localStorage.setItem('roulette_asked', JSON.stringify(askedData));
 
-  // Зберігаємо налаштування інтерфейсу
+  // Зберігаємо стан налаштувань
   const settings = {
     repeat: document.getElementById('toggle-repeat').checked,
     questions: document.getElementById('toggle-questions').checked,
@@ -429,12 +435,12 @@ function saveToStorage() {
 }
 
 function loadSettings() {
-  const settings = JSON.parse(localStorage.getItem('roulette_settings'));
-  if (settings) {
-    document.getElementById('toggle-repeat').checked = settings.repeat;
-    document.getElementById('toggle-questions').checked = settings.questions;
-    document.getElementById('toggle-timer-auto').checked = settings.timerAuto;
-    document.getElementById('timer-duration').value = settings.timerDuration;
+  const s = JSON.parse(localStorage.getItem('roulette_settings'));
+  if (s) {
+    document.getElementById('toggle-repeat').checked = s.repeat;
+    document.getElementById('toggle-questions').checked = s.questions;
+    document.getElementById('toggle-timer-auto').checked = s.timerAuto;
+    document.getElementById('timer-duration').value = s.timerDuration;
   }
 }
 
@@ -457,7 +463,6 @@ document.getElementById('s-textarea').addEventListener('input', function() {
 document.getElementById('q-textarea').addEventListener('input', function() {
   questions = lines(this.value);
   saveToStorage();
-  renderQuestions();
 });
 
 function renderClassSelect() {
@@ -469,7 +474,16 @@ function renderClassSelect() {
     if (cls === currentClass) opt.selected = true;
     select.appendChild(opt);
   });
-  document.getElementById('active-class-title').textContent = `Клас: ${currentClass}`;
+  renderQuickTags();
+}
+
+function renderQuickTags() {
+  const container = document.getElementById('quick-class-tags');
+  container.innerHTML = Object.keys(classesData).map(cls => `
+    <div class="class-tag ${cls === currentClass ? 'active' : ''}" onclick="changeClass('${cls}')">
+      ${cls}
+    </div>
+  `).join('');
 }
 
 function changeClass(newClass) {
@@ -477,8 +491,8 @@ function changeClass(newClass) {
   if (!askedData[currentClass]) askedData[currentClass] = [];
   asked = new Set(askedData[currentClass]);
   document.getElementById('s-textarea').value = (classesData[currentClass] || []).join('\n');
-  document.getElementById('active-class-title').textContent = `Клас: ${currentClass}`;
   document.getElementById('group-results').innerHTML = '';
+  renderClassSelect();
   saveToStorage();
   updateAll();
 }
@@ -490,7 +504,6 @@ function addClass() {
     if (classesData[trimmed]) return alert("Клас вже існує!");
     classesData[trimmed] = [];
     changeClass(trimmed);
-    renderClassSelect();
   }
 }
 
@@ -501,7 +514,6 @@ function deleteClass() {
     delete askedData[currentClass];
     currentClass = Object.keys(classesData)[0];
     changeClass(currentClass);
-    renderClassSelect();
   }
 }
 
@@ -513,13 +525,6 @@ function renderChips() {
   document.getElementById('student-count').textContent = students.length;
   if (!students.length) { el.innerHTML = '<div class="empty">Список порожній.</div>'; return; }
   el.innerHTML = students.map(s => `<div class="chip ${asked.has(s) ? 'asked' : ''}">${asked.has(s) ? '✓ ' : ''}${s}</div>`).join('');
-}
-
-function renderQuestions() {
-  const el = document.getElementById('q-list');
-  document.getElementById('q-count').textContent = questions.length;
-  if (!questions.length) { el.innerHTML = '<div class="empty">Запитань немає.</div>'; return; }
-  el.innerHTML = questions.map(q => `<div class="q-item"><span>${q}</span></div>`).join('');
 }
 
 function getAvail() {
@@ -560,7 +565,7 @@ function buildDrum() {
   setTop(0); highlight(0);
 }
 
-function updateAll() { renderChips(); buildDrum(); updateStatus(); }
+function updateAll() { renderChips(); buildDrum(); updateStatus(); renderQuickTags(); }
 
 // TIMER LOGIC
 function resetTimer() {
@@ -598,19 +603,14 @@ function toggleTimer() {
 function generateGroups() {
   const students = [...(classesData[currentClass] || [])];
   if (students.length === 0) return alert("Список учнів порожній!");
-  
   const count = parseInt(document.getElementById('group-count').value);
   if (isNaN(count) || count < 2) return alert("Вкажіть мінімум 2 команди");
-
-  // Shuffle
   for (let i = students.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [students[i], students[j]] = [students[j], students[i]];
   }
-
   const groups = Array.from({ length: count }, () => []);
   students.forEach((s, i) => groups[i % count].push(s));
-
   const container = document.getElementById('group-results');
   container.innerHTML = groups.map((g, i) => `
     <div class="group-card">
@@ -623,10 +623,9 @@ function generateGroups() {
 // SPIN LOGIC
 function doSpin() {
   if (spinning) return;
-  buildDrum(); // Оновлення перед стартом
+  buildDrum();
   const avail = getAvail();
   if (!avail.length) return;
-
   spinning = true;
   resetTimer();
   document.getElementById('spin-btn').disabled = true;
@@ -634,14 +633,12 @@ function doSpin() {
   document.getElementById('question-box').classList.remove('show');
   document.getElementById('timer-box').classList.remove('show');
   document.getElementById('drum-ring').classList.add('go');
-
   const targetIdx = Math.floor(Math.random() * avail.length);
   const targetName = avail[targetIdx];
   const laps = 5 + Math.floor(Math.random() * 3);
   const endScroll = (laps * avail.length + targetIdx) * IH;
   const duration = 3000;
   const easeOut = t => 1 - Math.pow(1 - t, 4);
-
   let startTs = null;
   function step(ts) {
     if (!startTs) startTs = ts;
@@ -660,28 +657,23 @@ function finishSpin(winner) {
   document.getElementById('drum-ring').classList.remove('go');
   asked.add(winner);
   saveToStorage();
-  
   document.getElementById('result-name').textContent = winner;
   document.getElementById('result-box').classList.add('revealed');
-
   if (document.getElementById('toggle-questions').checked && questions.length) {
     document.getElementById('question-text').textContent = questions[Math.floor(Math.random() * questions.length)];
     document.getElementById('question-box').classList.add('show');
   }
-
   if (document.getElementById('toggle-timer-auto').checked) {
     document.getElementById('timer-box').classList.add('show');
   }
-  
   setTimeout(() => { renderChips(); updateStatus(); }, 1200); 
 }
 
 // INIT
-loadSettings(); // Завантажуємо налаштування перед рендером
+loadSettings();
 document.getElementById('s-textarea').value = (classesData[currentClass] || []).join('\n');
 document.getElementById('q-textarea').value = questions.join('\n');
 renderClassSelect();
-renderQuestions();
 updateAll();
 resetTimer();
 </script>

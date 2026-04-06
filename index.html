@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Класна рулетка + Таймер</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: #2e2e2e;
+    --accent: #f5e642;
+    --accent2: #42f5a1;
+    --red: #ff4d4d;
+    --text: #f0f0f0;
+    --muted: #888;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(245,230,66,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,230,66,.04) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header { text-align: center; margin-bottom: 48px; }
+  .logo {
+    display: inline-block; font-family: 'Unbounded', sans-serif;
+    font-weight: 900; font-size: clamp(28px,5vw,52px);
+    letter-spacing: -2px; color: var(--text); margin-bottom: 8px;
+  }
+  .logo span { color: var(--accent); }
+  .subtitle { font-size: 14px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+
+  .tabs {
+    display: flex; gap: 4px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 32px;
+  }
+  .tab {
+    flex: 1; padding: 10px; border: none; background: transparent; color: var(--muted);
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+    border-radius: 9px; cursor: pointer; transition: all .2s;
+  }
+  .tab.active { background: var(--accent); color: #0f0f0f; font-weight: 600; }
+  .tab:not(.active):hover { color: var(--text); background: var(--surface2); }
+  .panel { display: none; } .panel.active { display: block; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; margin-bottom: 16px;
+  }
+  .card-title {
+    font-family: 'Unbounded', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
+  }
+
+  textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.8;
+    outline: none; resize: vertical; transition: border-color .2s; min-height: 180px;
+  }
+  textarea:focus { border-color: var(--accent); }
+
+  select, input[type="number"] {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 14px; outline: none;
+    transition: border-color .2s;
+  }
+  select:focus, input[type="number"]:focus { border-color: var(--accent); }
+
+  .btn {
+    padding: 12px 20px; border-radius: 10px; font-family: 'Inter', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s;
+    border: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-red { background: transparent; color: var(--red); border: 1px solid #ff4d4d44; }
+  .btn-red:hover { background: #ff4d4d18; }
+  .btn-accent { background: var(--accent); color: #0f0f0f; }
+  .btn-accent:hover { opacity: 0.9; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px; }
+  .chip {
+    display: flex; align-items: center; gap: 6px; padding: 6px 14px;
+    border-radius: 100px; font-size: 13px; font-weight: 500;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+  }
+  .chip.asked { background: rgba(66,245,161,.1); border-color: var(--accent2); color: var(--accent2); }
+
+  .toggle-wrap { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--text); cursor: pointer; }
+  .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 12px; transition: .25s; cursor: pointer;
+  }
+  .slider::before {
+    content: ''; position: absolute; width: 16px; height: 16px;
+    left: 3px; bottom: 3px; background: var(--muted); border-radius: 50%; transition: .25s;
+  }
+  .toggle input:checked + .slider { background: var(--accent); border-color: var(--accent); }
+  .toggle input:checked + .slider::before { transform: translateX(20px); background: #0f0f0f; }
+
+  .q-list { display: flex; flex-direction: column; gap: 8px; }
+  .q-item {
+    display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px;
+    background: var(--surface2); border-radius: 10px; border: 1px solid var(--border);
+    font-size: 14px; line-height: 1.5;
+  }
+  .empty { text-align: center; padding: 24px; color: var(--muted); font-size: 14px; width: 100%; }
+  .badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 22px; padding: 0 6px; background: var(--accent); color: #0f0f0f;
+    border-radius: 100px; font-size: 11px; font-weight: 700; font-family: 'Unbounded', sans-serif;
+  }
+  .row-space { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+
+  /* ── DRUM ── */
+  .spin-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  @media(max-width:640px){ .spin-layout { grid-template-columns: 1fr; } }
+
+  .drum-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 20px;
+  }
+
+  .drum-outer {
+    width: 220px; height: 220px; border-radius: 50%;
+    position: relative; overflow: hidden;
+    background: var(--surface2); border: 3px solid var(--border); flex-shrink: 0;
+  }
+
+  .drum-ring-wrap {
+    position: absolute; inset: -6px; border-radius: 50%; pointer-events: none; z-index: 12;
+    opacity: 0; transition: opacity .3s;
+  }
+  .drum-ring-wrap.go { opacity: 1; animation: ring-spin .5s linear infinite; }
+  @keyframes ring-spin { to { transform: rotate(360deg); } }
+  .drum-ring-inner {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: var(--accent); border-right-color: var(--accent2);
+  }
+
+  .drum-pointer {
+    position: absolute; left: 50%; top: 0; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 10px solid transparent; border-right: 10px solid transparent;
+    border-top: 18px solid var(--accent);
+    z-index: 20; filter: drop-shadow(0 2px 6px rgba(245,230,66,.5));
+  }
+  
+  .drum-line {
+    position: absolute; left: 10%; right: 10%; height: 2px;
+    background: var(--accent); opacity: 0.3; z-index: 5; pointer-events: none;
+    box-shadow: 0 0 10px var(--accent);
+  }
+  .drum-line.top    { top: calc(50% - 22px); }
+  .drum-line.bottom { top: calc(50% + 22px); }
+
+  .drum-viewport {
+    position: absolute; inset: 0;
+    display: flex; align-items: flex-start; justify-content: center;
+    overflow: hidden; border-radius: 50%;
+  }
+  .drum-strip {
+    display: flex; flex-direction: column; align-items: center;
+    width: 100%; position: absolute; left: 0; right: 0;
+    transition: none;
+  }
+  .drum-item {
+    height: 44px; width: 100%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--text); padding: 0 14px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    opacity: .2; transition: transform 0.1s, opacity 0.1s, color 0.1s;
+    transform: scale(0.9);
+  }
+  .drum-item.mid { opacity: .5; transform: scale(0.95); }
+  .drum-item.hi  { 
+    opacity: 1; font-size: 16px; color: var(--accent); 
+    transform: scale(1.15); text-shadow: 0 0 12px rgba(245, 230, 66, 0.4);
+  }
+
+  .big-spin {
+    width: 100%; padding: 18px;
+    font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 900; letter-spacing: .04em;
+    background: var(--accent); color: #0f0f0f; border: none; border-radius: 12px;
+    cursor: pointer; transition: background .15s, transform .1s;
+  }
+  .big-spin:disabled { opacity: .35; cursor: default; }
+
+  /* ── RESULT & QUESTION ── */
+  .result-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .result-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; text-align: center; min-height: 120px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  }
+  .result-box.revealed { border-color: var(--accent); background: rgba(245,230,66,.05); }
+  .result-name {
+    font-family: 'Unbounded', sans-serif; font-size: clamp(18px,4vw,28px); font-weight: 900;
+    color: var(--accent); line-height: 1.2; opacity: 0; transform: scale(.8);
+    transition: opacity .3s .1s, transform .3s .1s;
+  }
+  .result-box.revealed .result-name { opacity: 1; transform: scale(1); }
+
+  .question-box {
+    background: rgba(66,245,161,.06); border: 1px solid rgba(66,245,161,.25);
+    border-radius: 12px; padding: 20px; line-height: 1.6; color: var(--text);
+    display: none;
+  }
+  .question-box.show { display: block; }
+  
+  #question-text {
+    font-size: 22px; 
+    font-weight: 600;
+    margin-top: 10px;
+    color: var(--text);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  
+  /* ── TIMER ── */
+  .timer-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; display: none; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .timer-box.show { display: flex; }
+  .timer-display {
+    font-family: 'Unbounded', sans-serif; font-size: 32px; font-weight: 700; color: var(--accent2);
+    text-shadow: 0 0 15px rgba(66, 245, 161, 0.3);
+  }
+  .timer-display.warning { color: var(--red); animation: pulse 0.5s infinite; }
+  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+  .timer-controls { display: flex; gap: 8px; width: 100%; }
+  .timer-controls .btn { flex: 1; padding: 8px; font-size: 12px; }
+
+  /* ── GROUPS ── */
+  .group-results {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px; margin-top: 20px;
+  }
+  .group-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px;
+  }
+  .group-name {
+    font-family: 'Unbounded', sans-serif; font-size: 12px; font-weight: 700;
+    color: var(--accent); margin-bottom: 10px; border-bottom: 1px solid var(--border);
+    padding-bottom: 6px; text-transform: uppercase;
+  }
+  .group-member { font-size: 14px; margin-bottom: 4px; color: var(--text); opacity: 0.9; }
+
+  .status-msg { font-size: 13px; color: var(--muted); text-align: center; min-height: 20px; }
+  .class-manager { display: flex; gap: 8px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">Клас<span>на</span> Рулетка</div>
+    <div class="subtitle">Випадковий вибір учня · Групування · Таймер</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('spin',this)">🎰 Рулетка</button>
+    <button class="tab" onclick="switchTab('students',this)">👥 Учні</button>
+    <button class="tab" onclick="switchTab('questions',this)">❓ Запитання</button>
+  </div>
+
+  <div class="panel active" id="tab-spin">
+    <div class="spin-layout">
+      <div class="drum-card">
+        <div style="font-size: 12px; color: var(--accent); font-family: 'Unbounded'; text-transform: uppercase;" id="active-class-title">Клас: —</div>
+        
+        <div style="position:relative; width:220px; height:220px; flex-shrink:0;">
+          <div class="drum-ring-wrap" id="drum-ring">
+            <div class="drum-ring-inner"></div>
+          </div>
+          <div class="drum-outer">
+            <div class="drum-pointer"></div>
+            <div class="drum-line top"></div>
+            <div class="drum-line bottom"></div>
+            <div class="drum-viewport">
+              <div class="drum-strip" id="drum-strip"></div>
+            </div>
+          </div>
+        </div>
+        <button class="big-spin" id="spin-btn" onclick="doSpin()" disabled>КРУТИТИ!</button>
+        <div class="status-msg" id="status-msg"></div>
+      </div>
+
+      <div class="result-panel">
+        <div class="result-box" id="result-box">
+          <div style="font-size:10px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); font-family:'Unbounded';">Обраний учень</div>
+          <div class="result-name" id="result-name">—</div>
+        </div>
+
+        <div class="timer-box" id="timer-box">
+          <div class="timer-display" id="timer-display">00:30</div>
+          <div class="timer-controls">
+            <button class="btn btn-accent" id="timer-start-btn" onclick="toggleTimer()">СТАРТ</button>
+            <button class="btn btn-ghost" onclick="resetTimer()">СКИД</button>
+          </div>
+        </div>
+
+        <div class="question-box" id="question-box">
+          <div style="font-size:10px; font-weight:700; color:var(--accent2); font-family:'Unbounded'; margin-bottom:6px;">ЗАПИТАННЯ</div>
+          <div id="question-text"></div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:12px; background: var(--surface2); padding: 16px; border-radius: 12px; border: 1px solid var(--border);">
+          <label class="toggle-wrap">
+            <span class="toggle"><input type="checkbox" id="toggle-repeat" onchange="updateAll(); saveToStorage();"><span class="slider"></span></span>
+            Повторно викликати опитаних
+          </label>
+          <label class="toggle-wrap">
+            <span class="toggle"><input type="checkbox" id="toggle-questions" onchange="saveToStorage();"><span class="slider"></span></span>
+            Показувати запитання
+          </label>
+          <label class="toggle-wrap">
+            <span class="toggle"><input type="checkbox" id="toggle-timer-auto" checked onchange="saveToStorage();"><span class="slider"></span></span>
+            Використовувати таймер
+          </label>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:13px; color:var(--muted)">Час:</span>
+            <select id="timer-duration" style="flex:1; padding:6px;" onchange="resetTimer(); saveToStorage();">
+                <option value="15">15 сек</option>
+                <option value="30" selected>30 сек</option>
+                <option value="60">1 хв</option>
+                <option value="120">2 хв</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-ghost" style="font-size:11px;" onclick="clearAsked()">Скинути список опитаних</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="tab-students">
+    <div class="card">
+      <div class="card-title">Керування Класами</div>
+      <div class="class-manager">
+        <select id="class-select" onchange="changeClass(this.value)" style="flex:1"></select>
+        <button class="btn btn-ghost" onclick="addClass()">+ Новий</button>
+        <button class="btn btn-red" onclick="deleteClass()">🗑️</button>
+      </div>
+      <textarea id="s-textarea" placeholder="Введіть імена (кожне з нового рядка)..."></textarea>
+    </div>
+    
+    <div class="card">
+      <div class="row-space"><div class="card-title">Учні в класі <span class="badge" id="student-count">0</span></div></div>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Рандомне автогрупування</div>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <span style="font-size:14px; color:var(--muted)">Кількість команд:</span>
+        <input type="number" id="group-count" value="2" min="2" max="20" style="width:80px;">
+        <button class="btn btn-accent" onclick="generateGroups()">Сформувати групи</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('group-results').innerHTML='' ">Очистити</button>
+      </div>
+      <div class="group-results" id="group-results"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="tab-questions">
+    <div class="card">
+      <div class="card-title">Банк запитань</div>
+      <textarea id="q-textarea" placeholder="Введіть запитання (кожне з нового рядка)..."></textarea>
+    </div>
+    <div class="card">
+      <div class="row-space"><div class="card-title">Список запитань <span class="badge" id="q-count">0</span></div></div>
+      <div class="q-list" id="q-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const IH = 44;       
+const DCENTER = 110; 
+
+let classesData = JSON.parse(localStorage.getItem('roulette_classes')) || { "Мій Клас": [] };
+let currentClass = localStorage.getItem('roulette_current_class') || Object.keys(classesData)[0];
+let questions = JSON.parse(localStorage.getItem('roulette_questions')) || [];
+let askedData = JSON.parse(localStorage.getItem('roulette_asked')) || {};
+
+if (!askedData[currentClass]) askedData[currentClass] = [];
+let asked = new Set(askedData[currentClass]);
+
+let spinning = false;
+let animId = null;
+let timerInterval = null;
+let timeLeft = 30;
+let timerRunning = false;
+
+function saveToStorage() {
+  localStorage.setItem('roulette_classes', JSON.stringify(classesData));
+  localStorage.setItem('roulette_questions', JSON.stringify(questions));
+  localStorage.setItem('roulette_current_class', currentClass);
+  askedData[currentClass] = [...asked];
+  localStorage.setItem('roulette_asked', JSON.stringify(askedData));
+
+  // Зберігаємо налаштування інтерфейсу
+  const settings = {
+    repeat: document.getElementById('toggle-repeat').checked,
+    questions: document.getElementById('toggle-questions').checked,
+    timerAuto: document.getElementById('toggle-timer-auto').checked,
+    timerDuration: document.getElementById('timer-duration').value
+  };
+  localStorage.setItem('roulette_settings', JSON.stringify(settings));
+}
+
+function loadSettings() {
+  const settings = JSON.parse(localStorage.getItem('roulette_settings'));
+  if (settings) {
+    document.getElementById('toggle-repeat').checked = settings.repeat;
+    document.getElementById('toggle-questions').checked = settings.questions;
+    document.getElementById('toggle-timer-auto').checked = settings.timerAuto;
+    document.getElementById('timer-duration').value = settings.timerDuration;
+  }
+}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+function lines(val) { return val.split('\n').map(s => s.trim()).filter(Boolean); }
+
+document.getElementById('s-textarea').addEventListener('input', function() {
+  classesData[currentClass] = lines(this.value);
+  asked = new Set([...asked].filter(n => classesData[currentClass].includes(n)));
+  saveToStorage();
+  updateAll();
+});
+
+document.getElementById('q-textarea').addEventListener('input', function() {
+  questions = lines(this.value);
+  saveToStorage();
+  renderQuestions();
+});
+
+function renderClassSelect() {
+  const select = document.getElementById('class-select');
+  select.innerHTML = '';
+  Object.keys(classesData).forEach(cls => {
+    const opt = document.createElement('option');
+    opt.value = opt.textContent = cls;
+    if (cls === currentClass) opt.selected = true;
+    select.appendChild(opt);
+  });
+  document.getElementById('active-class-title').textContent = `Клас: ${currentClass}`;
+}
+
+function changeClass(newClass) {
+  currentClass = newClass;
+  if (!askedData[currentClass]) askedData[currentClass] = [];
+  asked = new Set(askedData[currentClass]);
+  document.getElementById('s-textarea').value = (classesData[currentClass] || []).join('\n');
+  document.getElementById('active-class-title').textContent = `Клас: ${currentClass}`;
+  document.getElementById('group-results').innerHTML = '';
+  saveToStorage();
+  updateAll();
+}
+
+function addClass() {
+  const name = prompt("Назва нового класу:");
+  if (name && name.trim()) {
+    const trimmed = name.trim();
+    if (classesData[trimmed]) return alert("Клас вже існує!");
+    classesData[trimmed] = [];
+    changeClass(trimmed);
+    renderClassSelect();
+  }
+}
+
+function deleteClass() {
+  if (Object.keys(classesData).length <= 1) return alert("Не можна видалити останній клас!");
+  if (confirm(`Видалити клас "${currentClass}"?`)) {
+    delete classesData[currentClass];
+    delete askedData[currentClass];
+    currentClass = Object.keys(classesData)[0];
+    changeClass(currentClass);
+    renderClassSelect();
+  }
+}
+
+function clearAsked() { asked.clear(); saveToStorage(); updateAll(); }
+
+function renderChips() {
+  const el = document.getElementById('chips');
+  const students = classesData[currentClass] || [];
+  document.getElementById('student-count').textContent = students.length;
+  if (!students.length) { el.innerHTML = '<div class="empty">Список порожній.</div>'; return; }
+  el.innerHTML = students.map(s => `<div class="chip ${asked.has(s) ? 'asked' : ''}">${asked.has(s) ? '✓ ' : ''}${s}</div>`).join('');
+}
+
+function renderQuestions() {
+  const el = document.getElementById('q-list');
+  document.getElementById('q-count').textContent = questions.length;
+  if (!questions.length) { el.innerHTML = '<div class="empty">Запитань немає.</div>'; return; }
+  el.innerHTML = questions.map(q => `<div class="q-item"><span>${q}</span></div>`).join('');
+}
+
+function getAvail() {
+  const students = classesData[currentClass] || [];
+  return document.getElementById('toggle-repeat').checked ? [...students] : students.filter(s => !asked.has(s));
+}
+
+function updateStatus() {
+  const avail = getAvail();
+  const btn = document.getElementById('spin-btn');
+  const msg = document.getElementById('status-msg');
+  btn.disabled = !avail.length;
+  msg.textContent = avail.length ? `Доступно учнів: ${avail.length}` : "Всі опитані!";
+}
+
+function setTop(scrollPx) {
+  document.getElementById('drum-strip').style.top = (DCENTER - IH / 2 - scrollPx) + 'px';
+}
+
+function highlight(scrollPx) {
+  const items = document.querySelectorAll('.drum-item');
+  items.forEach((el, i) => {
+    const diff = Math.abs(i * IH - scrollPx);
+    el.className = 'drum-item';
+    if (diff < IH * 0.5) el.classList.add('hi');
+    else if (diff < IH * 1.5) el.classList.add('mid');
+  });
+}
+
+function buildDrum() {
+  const avail = getAvail();
+  const strip = document.getElementById('drum-strip');
+  if (!avail.length) { strip.innerHTML = '<div class="drum-item mid">Порожньо</div>'; setTop(0); return; }
+  let html = '';
+  const reps = 15; 
+  for (let i = 0; i < reps * avail.length; i++) html += `<div class="drum-item">${avail[i % avail.length]}</div>`;
+  strip.innerHTML = html;
+  setTop(0); highlight(0);
+}
+
+function updateAll() { renderChips(); buildDrum(); updateStatus(); }
+
+// TIMER LOGIC
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timeLeft = parseInt(document.getElementById('timer-duration').value);
+  updateTimerDisplay();
+  document.getElementById('timer-start-btn').textContent = "СТАРТ";
+  document.getElementById('timer-display').classList.remove('warning');
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+  const s = (timeLeft % 60).toString().padStart(2, '0');
+  document.getElementById('timer-display').textContent = `${m}:${s}`;
+}
+
+function toggleTimer() {
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    document.getElementById('timer-start-btn').textContent = "ПРОДОВЖИТИ";
+  } else {
+    document.getElementById('timer-start-btn').textContent = "ПАУЗА";
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      if (timeLeft <= 5) document.getElementById('timer-display').classList.add('warning');
+      if (timeLeft <= 0) { clearInterval(timerInterval); timeLeft = 0; }
+      updateTimerDisplay();
+    }, 1000);
+  }
+  timerRunning = !timerRunning;
+}
+
+// GROUPING LOGIC
+function generateGroups() {
+  const students = [...(classesData[currentClass] || [])];
+  if (students.length === 0) return alert("Список учнів порожній!");
+  
+  const count = parseInt(document.getElementById('group-count').value);
+  if (isNaN(count) || count < 2) return alert("Вкажіть мінімум 2 команди");
+
+  // Shuffle
+  for (let i = students.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [students[i], students[j]] = [students[j], students[i]];
+  }
+
+  const groups = Array.from({ length: count }, () => []);
+  students.forEach((s, i) => groups[i % count].push(s));
+
+  const container = document.getElementById('group-results');
+  container.innerHTML = groups.map((g, i) => `
+    <div class="group-card">
+      <div class="group-name">Команда ${i + 1}</div>
+      ${g.map(m => `<div class="group-member">${m}</div>`).join('')}
+    </div>
+  `).join('');
+}
+
+// SPIN LOGIC
+function doSpin() {
+  if (spinning) return;
+  buildDrum(); // Оновлення перед стартом
+  const avail = getAvail();
+  if (!avail.length) return;
+
+  spinning = true;
+  resetTimer();
+  document.getElementById('spin-btn').disabled = true;
+  document.getElementById('result-box').classList.remove('revealed');
+  document.getElementById('question-box').classList.remove('show');
+  document.getElementById('timer-box').classList.remove('show');
+  document.getElementById('drum-ring').classList.add('go');
+
+  const targetIdx = Math.floor(Math.random() * avail.length);
+  const targetName = avail[targetIdx];
+  const laps = 5 + Math.floor(Math.random() * 3);
+  const endScroll = (laps * avail.length + targetIdx) * IH;
+  const duration = 3000;
+  const easeOut = t => 1 - Math.pow(1 - t, 4);
+
+  let startTs = null;
+  function step(ts) {
+    if (!startTs) startTs = ts;
+    const progress = Math.min((ts - startTs) / duration, 1);
+    const currentScroll = endScroll * easeOut(progress);
+    setTop(currentScroll);
+    highlight(currentScroll);
+    if (progress < 1) animId = requestAnimationFrame(step);
+    else finishSpin(targetName);
+  }
+  animId = requestAnimationFrame(step);
+}
+
+function finishSpin(winner) {
+  spinning = false;
+  document.getElementById('drum-ring').classList.remove('go');
+  asked.add(winner);
+  saveToStorage();
+  
+  document.getElementById('result-name').textContent = winner;
+  document.getElementById('result-box').classList.add('revealed');
+
+  if (document.getElementById('toggle-questions').checked && questions.length) {
+    document.getElementById('question-text').textContent = questions[Math.floor(Math.random() * questions.length)];
+    document.getElementById('question-box').classList.add('show');
+  }
+
+  if (document.getElementById('toggle-timer-auto').checked) {
+    document.getElementById('timer-box').classList.add('show');
+  }
+  
+  setTimeout(() => { renderChips(); updateStatus(); }, 1200); 
+}
+
+// INIT
+loadSettings(); // Завантажуємо налаштування перед рендером
+document.getElementById('s-textarea').value = (classesData[currentClass] || []).join('\n');
+document.getElementById('q-textarea').value = questions.join('\n');
+renderClassSelect();
+renderQuestions();
+updateAll();
+resetTimer();
+</script>
+</body>
+</html>

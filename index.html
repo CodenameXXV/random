@@ -445,7 +445,6 @@
 
     
     <div class="header-controls">
-      <!-- Quick toggle for questions -->
       <label class="quick-toggle" id="quick-questions-toggle" title="Показувати запитання">
         <span class="quick-toggle-label">Запитання</span>
         <span class="mini-toggle">
@@ -454,7 +453,6 @@
         </span>
       </label>
       
-      <!-- Settings gear -->
       <button class="settings-gear" onclick="openSettings()" title="Налаштування">⚙️</button>
     </div>
   </header>
@@ -549,7 +547,6 @@
   </div>
 </div>
 
-<!-- SETTINGS MODAL -->
 <div class="settings-modal" id="settings-modal" onclick="if(event.target===this)closeSettings()">
   <div class="settings-content">
     <div class="settings-header">
@@ -611,6 +608,7 @@ const DCENTER = 100;
 let classesData = JSON.parse(localStorage.getItem('roulette_classes')) || { "Мій Клас": [] };
 let currentClass = localStorage.getItem('roulette_current_class') || Object.keys(classesData)[0];
 let questions = JSON.parse(localStorage.getItem('roulette_questions')) || [];
+let availableQuestions = [...questions];
 let askedData = {};
 
 if (!askedData[currentClass]) askedData[currentClass] = [];
@@ -683,6 +681,7 @@ document.getElementById('s-textarea').addEventListener('input', function() {
 
 document.getElementById('q-textarea').addEventListener('input', function() {
   questions = lines(this.value);
+  availableQuestions = [...questions];
   saveToStorage();
 });
 
@@ -893,7 +892,17 @@ function finishSpin(winner) {
   
   // Show question if enabled (using quick toggle)
   if (document.getElementById('toggle-questions-quick').checked && questions.length) {
-    document.getElementById('question-text').textContent = questions[Math.floor(Math.random() * questions.length)];
+    // Якщо доступні запитання закінчилися, заповнюємо список наново
+    if (availableQuestions.length === 0) {
+      availableQuestions = [...questions];
+    }
+    
+    // Вибираємо випадковий індекс з ДОСТУПНИХ запитань
+    const qIndex = Math.floor(Math.random() * availableQuestions.length);
+    // Отримуємо запитання і ВІДРАЗУ видаляємо його з масиву доступних
+    const selectedQuestion = availableQuestions.splice(qIndex, 1)[0];
+    
+    document.getElementById('question-text').textContent = selectedQuestion;
     document.getElementById('question-box').classList.add('show');
   }
   
@@ -934,11 +943,6 @@ resetTimer();
   </footer>
 
   <script>
-    document.getElementById('footer-year').textContent = new Date().getFullYear();
-  </script>
-
-  <script>
-    // Автоматичний рік у футері
     document.getElementById('footer-year').textContent = new Date().getFullYear();
   </script>
   

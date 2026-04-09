@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Класна рулетка + Таймер</title>
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/CodenameXXV/random/refs/heads/main/ruletka.png">
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -78,13 +79,16 @@
   .mini-toggle input:checked + .mini-slider { background: var(--accent2); border-color: var(--accent2); }
   .mini-toggle input:checked + .mini-slider::before { transform: translateX(18px); background: #0f0f0f; }
 
-  .settings-gear {
+  /* Header Buttons (Settings & Fullscreen) */
+  .header-btn {
     width: 40px; height: 40px; border-radius: 50%;
     background: var(--surface); border: 1px solid var(--border);
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all .2s; font-size: 18px;
+    cursor: pointer; transition: all .2s; font-size: 18px; color: var(--text);
   }
-  .settings-gear:hover { border-color: var(--accent); color: var(--accent); transform: rotate(30deg); }
+  .header-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .settings-gear:hover { transform: rotate(30deg); }
+  .header-btn svg { transition: all .2s; }
 
   .tabs {
     display: flex; gap: 4px; background: var(--surface);
@@ -443,7 +447,6 @@
   <header>
     <div class="logo"><span>Клас</span>на👍 Рулетка</div>
 
-    
     <div class="header-controls">
       <label class="quick-toggle" id="quick-questions-toggle" title="Показувати запитання">
         <span class="quick-toggle-label">Запитання</span>
@@ -453,7 +456,16 @@
         </span>
       </label>
       
-      <button class="settings-gear" onclick="openSettings()" title="Налаштування">⚙️</button>
+      <button class="header-btn" id="fullscreen-btn" onclick="toggleFullScreen()" title="На весь екран">
+        <svg id="fs-enter-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+        </svg>
+        <svg id="fs-exit-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+          <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+        </svg>
+      </button>
+
+      <button class="header-btn settings-gear" onclick="openSettings()" title="Налаштування">⚙️</button>
     </div>
   </header>
 
@@ -523,7 +535,7 @@
     </div>
     
     <div class="card">
-      <div class="row-space"><div class="card-title">Активні учні: <span class="card-title" id="student-count"/span></div></div>
+      <div class="row-space"><div class="card-title">Активні учні: <span class="card-title" id="student-count"></span></div></div>
       <div class="chips" id="chips"></div>
     </div>
 
@@ -925,6 +937,36 @@ function closeSettings() {
 // Close modal with Escape key
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeSettings();
+});
+
+// FULLSCREEN LOGIC
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.log(`Помилка переходу в повноекранний режим: ${err.message}`);
+    });
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
+}
+
+// Update fullscreen icons based on state
+document.addEventListener('fullscreenchange', () => {
+  const enterIcon = document.getElementById('fs-enter-icon');
+  const exitIcon = document.getElementById('fs-exit-icon');
+  const btn = document.getElementById('fullscreen-btn');
+  
+  if (document.fullscreenElement) {
+    enterIcon.style.display = 'none';
+    exitIcon.style.display = 'block';
+    btn.title = "Вийти з повноекранного режиму";
+  } else {
+    enterIcon.style.display = 'block';
+    exitIcon.style.display = 'none';
+    btn.title = "На весь екран";
+  }
 });
 
 // INIT

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Класна рулетка + Таймер</title>
+<title data-i18n="title">Класна рулетка + Таймер</title>
 <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/CodenameXXV/random/refs/heads/main/ruletka.png">
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -45,11 +45,29 @@
   .subtitle { font-size: 13px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
   
   /* Header controls */
+  .header-left-controls {
+    position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    display: flex; align-items: center; gap: 8px;
+  }
+  
   .header-controls {
     position: absolute; right: 0; top: 50%; transform: translateY(-50%);
     display: flex; align-items: center; gap: 8px;
   }
   
+  /* Language switch */
+  .lang-switch {
+    display: flex; align-items: center; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 100px; padding: 2px; gap: 2px;
+  }
+  .lang-btn {
+    padding: 6px 10px; font-size: 10px; font-weight: 700; border-radius: 100px;
+    border: none; background: transparent; color: var(--muted); cursor: pointer;
+    font-family: 'Unbounded', sans-serif; transition: all .2s;
+  }
+  .lang-btn.active { background: var(--accent); color: #0f0f0f; }
+  .lang-btn:not(.active):hover { color: var(--text); }
+
   /* Quick toggle for questions */
   .quick-toggle {
     display: flex; align-items: center; gap: 8px; padding: 6px 12px;
@@ -445,18 +463,25 @@
 <div class="wrap">
 
   <header>
-    <div class="logo"><span>Клас</span>на👍 Рулетка</div>
+    <div class="header-left-controls">
+      <div class="lang-switch">
+        <button class="lang-btn active" id="lang-uk" onclick="setLang('uk')">UK</button>
+        <button class="lang-btn" id="lang-en" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+
+    <div class="logo" data-i18n-html="logo"><span>Клас</span>на👍 Рулетка</div>
 
     <div class="header-controls">
-      <label class="quick-toggle" id="quick-questions-toggle" title="Показувати запитання">
-        <span class="quick-toggle-label">Запитання</span>
+      <label class="quick-toggle" id="quick-questions-toggle" data-i18n-title="quick_questions_title" title="Показувати запитання">
+        <span class="quick-toggle-label" data-i18n="quick_questions">Запитання</span>
         <span class="mini-toggle">
           <input type="checkbox" id="toggle-questions-quick" onchange="toggleQuestionsQuick()">
           <span class="mini-slider"></span>
         </span>
       </label>
       
-      <button class="header-btn" id="fullscreen-btn" onclick="toggleFullScreen()" title="На весь екран">
+      <button class="header-btn" id="fullscreen-btn" onclick="toggleFullScreen()" data-i18n-title="fs_enter" title="На весь екран">
         <svg id="fs-enter-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
         </svg>
@@ -465,14 +490,14 @@
         </svg>
       </button>
 
-      <button class="header-btn settings-gear" onclick="openSettings()" title="Налаштування">⚙️</button>
+      <button class="header-btn settings-gear" onclick="openSettings()" data-i18n-title="settings" title="Налаштування">⚙️</button>
     </div>
   </header>
 
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('spin',this)">🎰 Рулетка</button>
-    <button class="tab" onclick="switchTab('students',this)">👥 Учні</button>
-    <button class="tab" onclick="switchTab('questions',this)">❓ Запитання</button>
+    <button class="tab active" onclick="switchTab('spin',this)" data-i18n="tab_spin">🎰 Рулетка</button>
+    <button class="tab" onclick="switchTab('students',this)" data-i18n="tab_students">👥 Учні</button>
+    <button class="tab" onclick="switchTab('questions',this)" data-i18n="tab_questions">❓ Запитання</button>
   </div>
 
   <div class="panel active" id="tab-spin">
@@ -480,7 +505,7 @@
       <div class="drum-card">
         
         <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
-          <span style="font-size: 12px; color: var(--accent); font-family: 'Unbounded'; text-transform: uppercase;">Клас:</span>
+          <span style="font-size: 12px; color: var(--accent); font-family: 'Unbounded'; text-transform: uppercase;" data-i18n="class_label">Клас:</span>
           <div class="class-tags" id="quick-class-tags"></div>
         </div>
 
@@ -497,18 +522,18 @@
             </div>
           </div>
         </div>
-        <button class="big-spin" id="spin-btn" onclick="doSpin()" disabled>КРУТИТИ!</button>
+        <button class="big-spin" id="spin-btn" onclick="doSpin()" data-i18n="spin_btn" disabled>КРУТИТИ!</button>
         <div class="status-msg" id="status-msg"></div>
       </div>
 
       <div class="result-panel">
         <div class="hero-result" id="result-box">
-          <div class="result-label">✨ Обраний учень</div>
+          <div class="result-label" data-i18n="result_label">✨ Обраний учень</div>
           <div class="result-name" id="result-name">—</div>
         </div>
 
         <div class="hero-question" id="question-box">
-          <div class="question-label">❓ Запитання</div>
+          <div class="question-label" data-i18n="question_label">❓ Запитання</div>
           <div id="question-text"></div>
         </div>
 
@@ -516,7 +541,7 @@
           <div class="timer-display" id="timer-display">00:30</div>
           <div class="timer-controls">
             <button class="btn btn-accent" id="timer-start-btn" onclick="toggleTimer()">▶ СТАРТ</button>
-            <button class="btn btn-ghost" onclick="resetTimer()">↺ СКИД</button>
+            <button class="btn btn-ghost" onclick="resetTimer()" data-i18n="btn_reset">↺ СКИД</button>
           </div>
         </div>
       </div>
@@ -525,27 +550,27 @@
 
   <div class="panel" id="tab-students">
     <div class="card">
-      <div class="card-title">Керування Класами</div>
+      <div class="card-title" data-i18n="class_management">Керування Класами</div>
       <div class="class-manager">
         <select id="class-select" onchange="changeClass(this.value)" style="flex:1"></select>
-        <button class="btn btn-ghost" onclick="addClass()">+ Новий</button>
+        <button class="btn btn-ghost" onclick="addClass()" data-i18n="btn_new">+ Новий</button>
         <button class="btn btn-red" onclick="deleteClass()">🗑️</button>
       </div>
-      <textarea id="s-textarea" placeholder="Введіть імена (кожне з нового рядка)..."></textarea>
+      <textarea id="s-textarea" data-i18n-placeholder="placeholder_students" placeholder="Введіть імена (кожне з нового рядка)..."></textarea>
     </div>
     
     <div class="card">
-      <div class="row-space"><div class="card-title">Активні учні: <span class="card-title" id="student-count"></span></div></div>
+      <div class="row-space"><div class="card-title"><span data-i18n="active_students">Активні учні: </span><span id="student-count"></span></div></div>
       <div class="chips" id="chips"></div>
     </div>
 
     <div class="card">
-      <div class="card-title">Рандомне автогрупування</div>
+      <div class="card-title" data-i18n="random_grouping">Рандомне автогрупування</div>
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-        <span style="font-size:14px; color:var(--muted)">Кількість команд:</span>
+        <span style="font-size:14px; color:var(--muted)" data-i18n="teams_count">Кількість команд:</span>
         <input type="number" id="group-count" value="2" min="2" max="20" style="width:80px;">
-        <button class="btn btn-accent" onclick="generateGroups()">Сформувати групи</button>
-        <button class="btn btn-ghost" onclick="document.getElementById('group-results').innerHTML='' ">Очистити</button>
+        <button class="btn btn-accent" onclick="generateGroups()" data-i18n="btn_form_groups">Сформувати групи</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('group-results').innerHTML='' " data-i18n="btn_clear">Очистити</button>
       </div>
       <div class="group-results" id="group-results"></div>
     </div>
@@ -553,8 +578,8 @@
 
   <div class="panel" id="tab-questions">
     <div class="card">
-      <div class="card-title">Банк запитань</div>
-      <textarea id="q-textarea" placeholder="Введіть запитання (кожне з нового рядка)..." style="min-height: 400px;"></textarea>
+      <div class="card-title" data-i18n="question_bank">Банк запитань</div>
+      <textarea id="q-textarea" data-i18n-placeholder="placeholder_questions" placeholder="Введіть запитання (кожне з нового рядка)..." style="min-height: 400px;"></textarea>
     </div>
   </div>
 </div>
@@ -562,16 +587,16 @@
 <div class="settings-modal" id="settings-modal" onclick="if(event.target===this)closeSettings()">
   <div class="settings-content">
     <div class="settings-header">
-      <div class="settings-title">⚙️ Налаштування</div>
+      <div class="settings-title" data-i18n="settings_title">⚙️ Налаштування</div>
       <button class="settings-close" onclick="closeSettings()">×</button>
     </div>
     
     <div class="settings-group">
-      <div class="settings-group-title">Поведінка рулетки</div>
+      <div class="settings-group-title" data-i18n="settings_behavior">Поведінка рулетки</div>
       <div class="setting-row">
         <div>
-          <div class="setting-label">Повторно викликати опитаних</div>
-          <div class="setting-desc">Дозволити вибір учнів, які вже відповідали</div>
+          <div class="setting-label" data-i18n="settings_repeat">Повторно викликати опитаних</div>
+          <div class="setting-desc" data-i18n="settings_repeat_desc">Дозволити вибір учнів, які вже відповідали</div>
         </div>
         <label class="toggle-wrap">
           <span class="toggle"><input type="checkbox" id="toggle-repeat" onchange="saveToStorage()"><span class="slider"></span></span>
@@ -580,11 +605,11 @@
     </div>
     
     <div class="settings-group">
-      <div class="settings-group-title">Таймер</div>
+      <div class="settings-group-title" data-i18n="settings_timer">Таймер</div>
       <div class="setting-row">
         <div>
-          <div class="setting-label">Режим таймера</div>
-          <div class="setting-desc">Автоматично показувати таймер після вибору</div>
+          <div class="setting-label" data-i18n="settings_timer_mode">Режим таймера</div>
+          <div class="setting-desc" data-i18n="settings_timer_mode_desc">Автоматично показувати таймер після вибору</div>
         </div>
         <label class="toggle-wrap">
           <span class="toggle"><input type="checkbox" id="toggle-timer-auto" onchange="saveToStorage()"><span class="slider"></span></span>
@@ -592,28 +617,179 @@
       </div>
       <div class="setting-row">
         <div>
-          <div class="setting-label">Тривалість таймера</div>
-          <div class="setting-desc">Час на відповідь після вибору учня</div>
+          <div class="setting-label" data-i18n="settings_timer_duration">Тривалість таймера</div>
+          <div class="setting-desc" data-i18n="settings_timer_duration_desc">Час на відповідь після вибору учня</div>
         </div>
         <div class="timer-select-wrap">
           <select id="timer-duration" onchange="resetTimer(); saveToStorage();">
-            <option value="15">15 сек</option>
-            <option value="30" selected>30 сек</option>
-            <option value="60">1 хв</option>
-            <option value="120">2 хв</option>
+            <option value="15" data-i18n="opt_15s">15 сек</option>
+            <option value="30" data-i18n="opt_30s" selected>30 сек</option>
+            <option value="60" data-i18n="opt_1m">1 хв</option>
+            <option value="120" data-i18n="opt_2m">2 хв</option>
           </select>
         </div>
       </div>
     </div>
     
     <div style="padding-top: 16px; border-top: 1px solid var(--border);">
-      <button class="btn btn-red" style="width:100%" onclick="clearAsked()">🗑️ Скинути список опитаних</button>
+      <button class="btn btn-red" style="width:100%" onclick="clearAsked()" data-i18n="btn_reset_asked">🗑️ Скинути список опитаних</button>
     </div>
   </div>
 </div>
 
 <script>
 'use strict';
+
+// --- TRANSLATIONS DICTIONARY ---
+const i18n = {
+  uk: {
+    title: "Класна рулетка + Таймер",
+    logo: "<span>Клас</span>на👍 Рулетка",
+    quick_questions: "Запитання",
+    quick_questions_title: "Показувати запитання",
+    fs_enter: "На весь екран",
+    fs_exit: "Вийти з повноекранного режиму",
+    settings: "Налаштування",
+    tab_spin: "🎰 Рулетка",
+    tab_students: "👥 Учні",
+    tab_questions: "❓ Запитання",
+    class_label: "Клас:",
+    spin_btn: "КРУТИТИ!",
+    result_label: "✨ Обраний учень",
+    question_label: "❓ Запитання",
+    btn_start: "▶ СТАРТ",
+    btn_reset: "↺ СКИД",
+    btn_resume: "▶ ПРОДОВЖИТИ",
+    btn_pause: "⏸ ПАУЗА",
+    class_management: "Керування Класами",
+    btn_new: "+ Новий",
+    placeholder_students: "Введіть імена (кожне з нового рядка)...",
+    active_students: "Активні учні: ",
+    random_grouping: "Рандомне автогрупування",
+    teams_count: "Кількість команд:",
+    btn_form_groups: "Сформувати групи",
+    btn_clear: "Очистити",
+    question_bank: "Банк запитань",
+    placeholder_questions: "Введіть запитання (кожне з нового рядка)...",
+    settings_title: "⚙️ Налаштування",
+    settings_behavior: "Поведінка рулетки",
+    settings_repeat: "Повторно викликати опитаних",
+    settings_repeat_desc: "Дозволити вибір учнів, які вже відповідали",
+    settings_timer: "Таймер",
+    settings_timer_mode: "Режим таймера",
+    settings_timer_mode_desc: "Автоматично показувати таймер після вибору",
+    settings_timer_duration: "Тривалість таймера",
+    settings_timer_duration_desc: "Час на відповідь після вибору учня",
+    opt_15s: "15 сек",
+    opt_30s: "30 сек",
+    opt_1m: "1 хв",
+    opt_2m: "2 хв",
+    btn_reset_asked: "🗑️ Скинути список опитаних",
+    footer_author: "Автор: ",
+    prompt_new_class: "Назва нового класу:",
+    err_class_exists: "Клас вже існує!",
+    err_delete_last: "Не можна видалити останній клас!",
+    confirm_delete: "Видалити клас",
+    status_available: "Доступно: {count} учнів",
+    status_all_asked: "✅ Всі опитані!",
+    status_empty_drum: "Порожньо",
+    status_empty_list: "Список порожній.",
+    err_empty_students: "Список учнів порожній!",
+    err_min_teams: "Вкажіть мінімум 2 команди",
+    team_prefix: "Команда"
+  },
+  en: {
+    title: "Class Roulette + Timer",
+    logo: "<span>Class</span>👍 Roulette",
+    quick_questions: "Questions",
+    quick_questions_title: "Show questions",
+    fs_enter: "Fullscreen",
+    fs_exit: "Exit fullscreen",
+    settings: "Settings",
+    tab_spin: "🎰 Roulette",
+    tab_students: "👥 Students",
+    tab_questions: "❓ Questions",
+    class_label: "Class:",
+    spin_btn: "SPIN!",
+    result_label: "✨ Selected Student",
+    question_label: "❓ Question",
+    btn_start: "▶ START",
+    btn_reset: "↺ RESET",
+    btn_resume: "▶ RESUME",
+    btn_pause: "⏸ PAUSE",
+    class_management: "Class Management",
+    btn_new: "+ New",
+    placeholder_students: "Enter names (each on a new line)...",
+    active_students: "Active students: ",
+    random_grouping: "Random Auto-grouping",
+    teams_count: "Number of teams:",
+    btn_form_groups: "Form groups",
+    btn_clear: "Clear",
+    question_bank: "Question Bank",
+    placeholder_questions: "Enter questions (each on a new line)...",
+    settings_title: "⚙️ Settings",
+    settings_behavior: "Roulette Behavior",
+    settings_repeat: "Call asked students again",
+    settings_repeat_desc: "Allow selection of students who have already answered",
+    settings_timer: "Timer",
+    settings_timer_mode: "Timer Mode",
+    settings_timer_mode_desc: "Automatically show timer after selection",
+    settings_timer_duration: "Timer Duration",
+    settings_timer_duration_desc: "Time to answer after student selection",
+    opt_15s: "15 sec",
+    opt_30s: "30 sec",
+    opt_1m: "1 min",
+    opt_2m: "2 min",
+    btn_reset_asked: "🗑️ Reset asked list",
+    footer_author: "Author: ",
+    prompt_new_class: "New class name:",
+    err_class_exists: "Class already exists!",
+    err_delete_last: "Cannot delete the last class!",
+    confirm_delete: "Delete class",
+    status_available: "Available: {count} students",
+    status_all_asked: "✅ All asked!",
+    status_empty_drum: "Empty",
+    status_empty_list: "List is empty.",
+    err_empty_students: "Student list is empty!",
+    err_min_teams: "Specify at least 2 teams",
+    team_prefix: "Team"
+  }
+};
+
+let currentLang = localStorage.getItem('roulette_lang') || 'uk';
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('roulette_lang', lang);
+
+  document.getElementById('lang-uk').classList.toggle('active', lang === 'uk');
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = i18n[lang][el.getAttribute('data-i18n')];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    el.innerHTML = i18n[lang][el.getAttribute('data-i18n-html')];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = i18n[lang][el.getAttribute('data-i18n-placeholder')];
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.title = i18n[lang][el.getAttribute('data-i18n-title')];
+  });
+
+  if (!timerRunning && timeLeft === parseInt(document.getElementById('timer-duration').value)) {
+    document.getElementById('timer-start-btn').textContent = i18n[currentLang].btn_start;
+  } else if (!timerRunning) {
+    document.getElementById('timer-start-btn').textContent = i18n[currentLang].btn_resume;
+  } else {
+    document.getElementById('timer-start-btn').textContent = i18n[currentLang].btn_pause;
+  }
+
+  updateAll();
+}
+
+// --- ORIGINAL LOGIC ---
 const IH = 44;       
 const DCENTER = 100; 
 
@@ -633,7 +809,6 @@ let timeLeft = 30;
 let timerRunning = false;
 
 const spinSound = new Audio('https://github.com/CodenameXXV/random/raw/refs/heads/main/roulette.mp3');
-//spinSound.loop = true;
 
 function saveToStorage() {
   localStorage.setItem('roulette_classes', JSON.stringify(classesData));
@@ -659,7 +834,6 @@ function loadSettings() {
     document.getElementById('toggle-timer-auto').checked = s.timerAuto ?? true;
     document.getElementById('timer-duration').value = s.timerDuration ?? '30';
   }
-  // Sync quick toggle visual state
   syncQuickToggleVisual();
 }
 
@@ -733,18 +907,18 @@ function changeClass(newClass) {
 }
 
 function addClass() {
-  const name = prompt("Назва нового класу:");
+  const name = prompt(i18n[currentLang].prompt_new_class);
   if (name && name.trim()) {
     const trimmed = name.trim();
-    if (classesData[trimmed]) return alert("Клас вже існує!");
+    if (classesData[trimmed]) return alert(i18n[currentLang].err_class_exists);
     classesData[trimmed] = [];
     changeClass(trimmed);
   }
 }
 
 function deleteClass() {
-  if (Object.keys(classesData).length <= 1) return alert("Не можна видалити останній клас!");
-  if (confirm(`Видалити клас "${currentClass}"?`)) {
+  if (Object.keys(classesData).length <= 1) return alert(i18n[currentLang].err_delete_last);
+  if (confirm(`${i18n[currentLang].confirm_delete} "${currentClass}"?`)) {
     delete classesData[currentClass];
     delete askedData[currentClass];
     currentClass = Object.keys(classesData)[0];
@@ -763,7 +937,7 @@ function renderChips() {
   const el = document.getElementById('chips');
   const students = classesData[currentClass] || [];
   document.getElementById('student-count').textContent = students.length;
-  if (!students.length) { el.innerHTML = '<div class="empty" style="color:var(--muted)">Список порожній.</div>'; return; }
+  if (!students.length) { el.innerHTML = `<div class="empty" style="color:var(--muted)">${i18n[currentLang].status_empty_list}</div>`; return; }
   el.innerHTML = students.map(s => `<div class="chip ${asked.has(s) ? 'asked' : ''}">${asked.has(s) ? '✓ ' : ''}${s}</div>`).join('');
 }
 
@@ -777,7 +951,7 @@ function updateStatus() {
   const btn = document.getElementById('spin-btn');
   const msg = document.getElementById('status-msg');
   btn.disabled = !avail.length;
-  msg.textContent = avail.length ? `Доступно: ${avail.length} учнів` : "✅ Всі опитані!";
+  msg.textContent = avail.length ? i18n[currentLang].status_available.replace('{count}', avail.length) : i18n[currentLang].status_all_asked;
 }
 
 function setTop(scrollPx) {
@@ -797,7 +971,7 @@ function highlight(scrollPx) {
 function buildDrum() {
   const avail = getAvail();
   const strip = document.getElementById('drum-strip');
-  if (!avail.length) { strip.innerHTML = '<div class="drum-item mid">Порожньо</div>'; setTop(0); return; }
+  if (!avail.length) { strip.innerHTML = `<div class="drum-item mid">${i18n[currentLang].status_empty_drum}</div>`; setTop(0); return; }
   let html = '';
   const reps = 15; 
   for (let i = 0; i < reps * avail.length; i++) html += `<div class="drum-item">${avail[i % avail.length]}</div>`;
@@ -807,13 +981,12 @@ function buildDrum() {
 
 function updateAll() { renderChips(); buildDrum(); updateStatus(); renderQuickTags(); }
 
-// TIMER LOGIC
 function resetTimer() {
   clearInterval(timerInterval);
   timerRunning = false;
   timeLeft = parseInt(document.getElementById('timer-duration').value);
   updateTimerDisplay();
-  document.getElementById('timer-start-btn').textContent = "▶ СТАРТ";
+  document.getElementById('timer-start-btn').textContent = i18n[currentLang].btn_start;
   document.getElementById('timer-display').classList.remove('warning');
 }
 
@@ -826,9 +999,9 @@ function updateTimerDisplay() {
 function toggleTimer() {
   if (timerRunning) {
     clearInterval(timerInterval);
-    document.getElementById('timer-start-btn').textContent = "▶ ПРОДОВЖИТИ";
+    document.getElementById('timer-start-btn').textContent = i18n[currentLang].btn_resume;
   } else {
-    document.getElementById('timer-start-btn').textContent = "⏸ ПАУЗА";
+    document.getElementById('timer-start-btn').textContent = i18n[currentLang].btn_pause;
     timerInterval = setInterval(() => {
       timeLeft--;
       if (timeLeft <= 5) document.getElementById('timer-display').classList.add('warning');
@@ -839,12 +1012,11 @@ function toggleTimer() {
   timerRunning = !timerRunning;
 }
 
-// GROUPING LOGIC
 function generateGroups() {
   const students = [...(classesData[currentClass] || [])];
-  if (students.length === 0) return alert("Список учнів порожній!");
+  if (students.length === 0) return alert(i18n[currentLang].err_empty_students);
   const count = parseInt(document.getElementById('group-count').value);
-  if (isNaN(count) || count < 2) return alert("Вкажіть мінімум 2 команди");
+  if (isNaN(count) || count < 2) return alert(i18n[currentLang].err_min_teams);
   for (let i = students.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [students[i], students[j]] = [students[j], students[i]];
@@ -854,13 +1026,12 @@ function generateGroups() {
   const container = document.getElementById('group-results');
   container.innerHTML = groups.map((g, i) => `
     <div class="group-card">
-      <div class="group-name">Команда ${i + 1}</div>
+      <div class="group-name">${i18n[currentLang].team_prefix} ${i + 1}</div>
       ${g.map(m => `<div class="group-member">${m}</div>`).join('')}
     </div>
   `).join('');
 }
 
-// SPIN LOGIC
 function doSpin() {
   if (spinning) return;
   buildDrum();
@@ -909,27 +1080,20 @@ function finishSpin(winner) {
   asked.add(winner);
   saveToStorage();
   
-  // Show result with animation
   document.getElementById('result-name').textContent = winner;
   document.getElementById('result-box').classList.add('revealed');
   
-  // Show question if enabled (using quick toggle)
   if (document.getElementById('toggle-questions-quick').checked && questions.length) {
-    // Якщо доступні запитання закінчилися, заповнюємо список наново
     if (availableQuestions.length === 0) {
       availableQuestions = [...questions];
     }
-    
-    // Вибираємо випадковий індекс з ДОСТУПНИХ запитань
     const qIndex = Math.floor(Math.random() * availableQuestions.length);
-    // Отримуємо запитання і ВІДРАЗУ видаляємо його з масиву доступних
     const selectedQuestion = availableQuestions.splice(qIndex, 1)[0];
     
     document.getElementById('question-text').textContent = selectedQuestion;
     document.getElementById('question-box').classList.add('show');
   }
   
-  // Show timer if enabled
   if (document.getElementById('toggle-timer-auto').checked) {
     document.getElementById('timer-box').classList.add('show');
   }
@@ -937,24 +1101,17 @@ function finishSpin(winner) {
   setTimeout(() => { renderChips(); updateStatus(); }, 1200); 
 }
 
-// SETTINGS MODAL
-function openSettings() {
-  document.getElementById('settings-modal').classList.add('show');
-}
-function closeSettings() {
-  document.getElementById('settings-modal').classList.remove('show');
-}
+function openSettings() { document.getElementById('settings-modal').classList.add('show'); }
+function closeSettings() { document.getElementById('settings-modal').classList.remove('show'); }
 
-// Close modal with Escape key
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeSettings();
 });
 
-// FULLSCREEN LOGIC
 function toggleFullScreen() {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen().catch(err => {
-      console.log(`Помилка переходу в повноекранний режим: ${err.message}`);
+      console.log(`Error entering fullscreen: ${err.message}`);
     });
   } else {
     if (document.exitFullscreen) {
@@ -963,7 +1120,6 @@ function toggleFullScreen() {
   }
 }
 
-// Update fullscreen icons based on state
 document.addEventListener('fullscreenchange', () => {
   const enterIcon = document.getElementById('fs-enter-icon');
   const exitIcon = document.getElementById('fs-exit-icon');
@@ -972,11 +1128,13 @@ document.addEventListener('fullscreenchange', () => {
   if (document.fullscreenElement) {
     enterIcon.style.display = 'none';
     exitIcon.style.display = 'block';
-    btn.title = "Вийти з повноекранного режиму";
+    btn.title = i18n[currentLang].fs_exit;
+    btn.setAttribute('data-i18n-title', 'fs_exit');
   } else {
     enterIcon.style.display = 'block';
     exitIcon.style.display = 'none';
-    btn.title = "На весь екран";
+    btn.title = i18n[currentLang].fs_enter;
+    btn.setAttribute('data-i18n-title', 'fs_enter');
   }
 });
 
@@ -987,10 +1145,11 @@ document.getElementById('q-textarea').value = questions.join('\n');
 renderClassSelect();
 updateAll();
 resetTimer();
+setLang(currentLang); // Apply saved language
 </script>
   
   <footer class="site-footer">
-    Автор: <a href="https://codenamexxv.github.io/teacher/" target="_blank">Ігор Шуляк</a>
+    <span data-i18n="footer_author">Автор: </span><a href="https://codenamexxv.github.io/teacher/" target="_blank">Ігор Шуляк</a>
     <span style="margin:0 4px">•</span>
     <span id="footer-year"></span>
   </footer>

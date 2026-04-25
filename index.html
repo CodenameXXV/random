@@ -632,6 +632,9 @@ let timerInterval = null;
 let timeLeft = 30;
 let timerRunning = false;
 
+const spinSound = new Audio('https://github.com/CodenameXXV/random/raw/refs/heads/main/roulette.mp3');
+//spinSound.loop = true;
+
 function saveToStorage() {
   localStorage.setItem('roulette_classes', JSON.stringify(classesData));
   localStorage.setItem('roulette_questions', JSON.stringify(questions));
@@ -864,6 +867,10 @@ function doSpin() {
   const avail = getAvail();
   if (!avail.length) return;
   spinning = true;
+  
+  spinSound.currentTime = 0;
+  spinSound.play().catch(e => console.log("Відтворення звуку заблоковано браузером:", e));
+
   resetTimer();
   document.getElementById('spin-btn').disabled = true;
   document.getElementById('result-box').classList.remove('revealed');
@@ -894,6 +901,10 @@ function doSpin() {
 
 function finishSpin(winner) {
   spinning = false;
+  
+  spinSound.pause();
+  spinSound.currentTime = 0;
+
   document.getElementById('drum-ring').classList.remove('go');
   asked.add(winner);
   saveToStorage();

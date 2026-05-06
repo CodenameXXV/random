@@ -456,7 +456,111 @@
   font-size: 11px;
   opacity: .7;
 }
-  
+
+/* ── CUSTOM DIALOG MODALS ── */
+.dialog-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.75);
+  display: none; align-items: center; justify-content: center;
+  z-index: 2000; backdrop-filter: blur(6px);
+  padding: 20px;
+}
+.dialog-overlay.show { display: flex; animation: fade-in .18s ease-out; }
+
+.dialog-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 0; max-width: 420px; width: 100%;
+  position: relative; animation: pop-in .22s cubic-bezier(.34,1.56,.64,1);
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+}
+
+.dialog-stripe {
+  height: 4px; width: 100%;
+}
+.dialog-stripe.accent   { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.dialog-stripe.red      { background: linear-gradient(90deg, #ff4d4d, #ff8080); }
+.dialog-stripe.neutral  { background: linear-gradient(90deg, var(--border), var(--surface2)); }
+
+.dialog-body { padding: 28px 28px 24px; }
+
+.dialog-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin-bottom: 18px;
+}
+.dialog-icon.accent-icon { background: rgba(245,230,66,.12); border: 1px solid rgba(245,230,66,.25); }
+.dialog-icon.red-icon    { background: rgba(255,77,77,.12); border: 1px solid rgba(255,77,77,.25); }
+.dialog-icon.info-icon   { background: rgba(66,245,161,.1); border: 1px solid rgba(66,245,161,.2); }
+
+.dialog-title {
+  font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 700;
+  color: var(--text); margin-bottom: 8px; line-height: 1.2;
+}
+.dialog-msg {
+  font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 0;
+}
+.dialog-msg strong { color: var(--text); font-weight: 600; }
+
+.dialog-input-wrap {
+  margin-top: 18px; position: relative;
+}
+.dialog-input {
+  width: 100%; background: var(--surface2);
+  border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 13px 16px; color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 15px;
+  outline: none; transition: border-color .2s, box-shadow .2s;
+}
+.dialog-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(245,230,66,.12);
+}
+.dialog-input.red-focus:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(255,77,77,.12);
+}
+.dialog-input-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px; display: block; font-family: 'Unbounded';
+}
+
+.dialog-footer {
+  display: flex; gap: 10px; padding: 0 28px 24px;
+  justify-content: flex-end;
+}
+.dialog-footer .btn { min-width: 100px; padding: 11px 20px; font-size: 14px; }
+.dialog-btn-cancel {
+  background: var(--surface2); color: var(--muted);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 11px 20px; font-size: 14px; font-weight: 600;
+  font-family: 'Inter'; cursor: pointer; transition: all .15s;
+  min-width: 100px;
+}
+.dialog-btn-cancel:hover { color: var(--text); border-color: var(--accent); }
+.dialog-btn-confirm {
+  border: none; border-radius: 10px;
+  padding: 11px 20px; font-size: 14px; font-weight: 700;
+  font-family: 'Inter'; cursor: pointer; transition: all .15s;
+  min-width: 100px;
+}
+.dialog-btn-confirm.accent-btn { background: var(--accent); color: #0f0f0f; }
+.dialog-btn-confirm.accent-btn:hover { opacity: .88; transform: translateY(-1px); }
+.dialog-btn-confirm.red-btn { background: var(--red); color: #fff; }
+.dialog-btn-confirm.red-btn:hover { opacity: .88; transform: translateY(-1px); }
+.dialog-btn-confirm.neutral-btn { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.dialog-btn-confirm.neutral-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+.dialog-divider { height: 1px; background: var(--border); margin: 0 28px 20px; }
+
+/* shake animation for validation error */
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+.shake { animation: shake .35s ease-out; }
 </style>
 </head>
 <body>
@@ -554,6 +658,7 @@
       <div class="class-manager">
         <select id="class-select" onchange="changeClass(this.value)" style="flex:1"></select>
         <button class="btn btn-ghost" onclick="addClass()" data-i18n="btn_new">+ Новий</button>
+        <button class="btn btn-ghost" onclick="renameClass()" title="Перейменувати клас" data-i18n-title="btn_rename_title">✏️</button>
         <button class="btn btn-red" onclick="deleteClass()">🗑️</button>
       </div>
       <textarea id="s-textarea" data-i18n-placeholder="placeholder_students" placeholder="Введіть імена (кожне з нового рядка)..."></textarea>
@@ -580,6 +685,60 @@
     <div class="card">
       <div class="card-title" data-i18n="question_bank">Банк запитань</div>
       <textarea id="q-textarea" data-i18n-placeholder="placeholder_questions" placeholder="Введіть запитання (кожне з нового рядка)..." style="min-height: 400px;"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ── ALERT DIALOG ── -->
+<div class="dialog-overlay" id="alert-dialog" onclick="if(event.target===this)_alertResolve()">
+  <div class="dialog-box" id="alert-box">
+    <div class="dialog-stripe" id="alert-stripe"></div>
+    <div class="dialog-body">
+      <div class="dialog-icon" id="alert-icon"></div>
+      <div class="dialog-title" id="alert-title"></div>
+      <div class="dialog-msg"  id="alert-msg"></div>
+    </div>
+    <div class="dialog-divider"></div>
+    <div class="dialog-footer">
+      <button class="dialog-btn-confirm neutral-btn" id="alert-ok" onclick="_alertResolve()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONFIRM DIALOG ── -->
+<div class="dialog-overlay" id="confirm-dialog" onclick="if(event.target===this)_confirmResolve(false)">
+  <div class="dialog-box">
+    <div class="dialog-stripe red"></div>
+    <div class="dialog-body">
+      <div class="dialog-icon red-icon">🗑️</div>
+      <div class="dialog-title" id="confirm-title"></div>
+      <div class="dialog-msg"  id="confirm-msg"></div>
+    </div>
+    <div class="dialog-divider"></div>
+    <div class="dialog-footer">
+      <button class="dialog-btn-cancel" onclick="_confirmResolve(false)" id="confirm-cancel-btn">Скасувати</button>
+      <button class="dialog-btn-confirm red-btn" onclick="_confirmResolve(true)" id="confirm-ok-btn">Видалити</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROMPT DIALOG (rename / new class) ── -->
+<div class="dialog-overlay" id="prompt-dialog" onclick="if(event.target===this)_promptResolve(null)">
+  <div class="dialog-box">
+    <div class="dialog-stripe" id="prompt-stripe"></div>
+    <div class="dialog-body">
+      <div class="dialog-icon" id="prompt-icon"></div>
+      <div class="dialog-title" id="prompt-title"></div>
+      <div class="dialog-msg"  id="prompt-msg"></div>
+      <div class="dialog-input-wrap">
+        <label class="dialog-input-label" id="prompt-input-label"></label>
+        <input class="dialog-input" type="text" id="prompt-input" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+    <div class="dialog-divider"></div>
+    <div class="dialog-footer">
+      <button class="dialog-btn-cancel" onclick="_promptResolve(null)" id="prompt-cancel-btn">Скасувати</button>
+      <button class="dialog-btn-confirm" id="prompt-ok-btn" onclick="_promptSubmit()">Підтвердити</button>
     </div>
   </div>
 </div>
@@ -690,6 +849,20 @@ const i18n = {
     err_class_exists: "Клас вже існує!",
     err_delete_last: "Не можна видалити останній клас!",
     confirm_delete: "Видалити клас",
+    prompt_rename_class: "Нова назва класу:",
+    err_rename_same: "Назва збігається з поточною!",
+    btn_rename_title: "Перейменувати клас",
+    btn_cancel: "Скасувати",
+    btn_delete_confirm: "Видалити",
+    dialog_err_title: "Помилка",
+    dialog_new_class_title: "+ Новий клас",
+    dialog_new_class_msg: "Введіть назву для нового класу",
+    dialog_class_name_label: "Назва класу",
+    dialog_delete_title: "Видалити клас?",
+    dialog_delete_msg: "Клас буде видалено назавжди:",
+    dialog_rename_title: "Перейменувати клас",
+    dialog_rename_msg: "Поточна назва:",
+    dialog_rename_ok: "Перейменувати",
     status_available: "Доступно: {count} учнів",
     status_all_asked: "✅ Всі опитані!",
     status_empty_drum: "Порожньо",
@@ -746,6 +919,20 @@ const i18n = {
     err_class_exists: "Class already exists!",
     err_delete_last: "Cannot delete the last class!",
     confirm_delete: "Delete class",
+    prompt_rename_class: "New class name:",
+    err_rename_same: "Name is the same as current!",
+    btn_rename_title: "Rename class",
+    btn_cancel: "Cancel",
+    btn_delete_confirm: "Delete",
+    dialog_err_title: "Error",
+    dialog_new_class_title: "+ New Class",
+    dialog_new_class_msg: "Enter a name for the new class",
+    dialog_class_name_label: "Class name",
+    dialog_delete_title: "Delete class?",
+    dialog_delete_msg: "This class will be permanently deleted:",
+    dialog_rename_title: "Rename Class",
+    dialog_rename_msg: "Current name:",
+    dialog_rename_ok: "Rename",
     status_available: "Available: {count} students",
     status_all_asked: "✅ All asked!",
     status_empty_drum: "Empty",
@@ -789,7 +976,91 @@ function setLang(lang) {
   updateAll();
 }
 
-// --- ORIGINAL LOGIC ---
+// ── CUSTOM DIALOG SYSTEM ──
+let _alertResolve = () => {};
+let _confirmResolve = () => {};
+let _promptResolve = () => {};
+
+function showAlert(msg, { title = '', icon = 'ℹ️', stripe = 'neutral', iconClass = 'info-icon' } = {}) {
+  return new Promise(resolve => {
+    _alertResolve = () => {
+      document.getElementById('alert-dialog').classList.remove('show');
+      resolve();
+    };
+    document.getElementById('alert-stripe').className = 'dialog-stripe ' + stripe;
+    document.getElementById('alert-icon').textContent = icon;
+    document.getElementById('alert-icon').className = 'dialog-icon ' + iconClass;
+    document.getElementById('alert-title').textContent = title;
+    document.getElementById('alert-msg').innerHTML = msg;
+    document.getElementById('alert-dialog').classList.add('show');
+  });
+}
+
+function showConfirm(msg, { title = '', confirmLabel = '', cancelLabel = '' } = {}) {
+  return new Promise(resolve => {
+    _confirmResolve = (val) => {
+      document.getElementById('confirm-dialog').classList.remove('show');
+      resolve(val);
+    };
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-msg').innerHTML = msg;
+    document.getElementById('confirm-ok-btn').textContent = confirmLabel || i18n[currentLang].btn_delete_confirm || 'Видалити';
+    document.getElementById('confirm-cancel-btn').textContent = cancelLabel || i18n[currentLang].btn_cancel || 'Скасувати';
+    document.getElementById('confirm-dialog').classList.add('show');
+  });
+}
+
+function showPrompt(msg, { title = '', icon = '✏️', stripe = 'accent', iconClass = 'accent-icon',
+    inputLabel = '', defaultValue = '', okLabel = '', cancelLabel = '', okClass = 'accent-btn' } = {}) {
+  return new Promise(resolve => {
+    _promptResolve = (val) => {
+      document.getElementById('prompt-dialog').classList.remove('show');
+      resolve(val);
+    };
+    document.getElementById('prompt-stripe').className = 'dialog-stripe ' + stripe;
+    document.getElementById('prompt-icon').textContent = icon;
+    document.getElementById('prompt-icon').className = 'dialog-icon ' + iconClass;
+    document.getElementById('prompt-title').textContent = title;
+    document.getElementById('prompt-msg').innerHTML = msg;
+    document.getElementById('prompt-input-label').textContent = inputLabel;
+    const input = document.getElementById('prompt-input');
+    input.value = defaultValue;
+    input.className = 'dialog-input';
+    document.getElementById('prompt-ok-btn').textContent = okLabel || 'Підтвердити';
+    document.getElementById('prompt-ok-btn').className = 'dialog-btn-confirm ' + okClass;
+    document.getElementById('prompt-cancel-btn').textContent = cancelLabel || i18n[currentLang].btn_cancel || 'Скасувати';
+    document.getElementById('prompt-dialog').classList.add('show');
+    setTimeout(() => { input.focus(); input.select(); }, 60);
+  });
+}
+
+function _promptSubmit() {
+  const val = document.getElementById('prompt-input').value.trim();
+  if (!val) {
+    const inp = document.getElementById('prompt-input');
+    inp.classList.add('shake');
+    inp.focus();
+    setTimeout(() => inp.classList.remove('shake'), 400);
+    return;
+  }
+  _promptResolve(val);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('alert-dialog').classList.contains('show')) { _alertResolve(); return; }
+    if (document.getElementById('confirm-dialog').classList.contains('show')) { _confirmResolve(false); return; }
+    if (document.getElementById('prompt-dialog').classList.contains('show')) { _promptResolve(null); return; }
+    closeSettings();
+  }
+  if (e.key === 'Enter') {
+    if (document.getElementById('prompt-dialog').classList.contains('show')) { _promptSubmit(); return; }
+    if (document.getElementById('confirm-dialog').classList.contains('show')) { _confirmResolve(true); return; }
+    if (document.getElementById('alert-dialog').classList.contains('show')) { _alertResolve(); return; }
+  }
+});
+
+// ── ORIGINAL LOGIC ──
 const IH = 44;       
 const DCENTER = 100; 
 
@@ -906,24 +1177,97 @@ function changeClass(newClass) {
   updateAll();
 }
 
-function addClass() {
-  const name = prompt(i18n[currentLang].prompt_new_class);
-  if (name && name.trim()) {
-    const trimmed = name.trim();
-    if (classesData[trimmed]) return alert(i18n[currentLang].err_class_exists);
-    classesData[trimmed] = [];
-    changeClass(trimmed);
+async function addClass() {
+  const lang = i18n[currentLang];
+  const name = await showPrompt(lang.dialog_new_class_msg || 'Введіть назву для нового класу', {
+    title: lang.dialog_new_class_title || '+ Новий клас',
+    icon: '🏫',
+    stripe: 'accent',
+    iconClass: 'accent-icon',
+    inputLabel: lang.dialog_class_name_label || 'Назва класу',
+    defaultValue: '',
+    okLabel: lang.btn_new || '+ Додати',
+    okClass: 'accent-btn',
+  });
+  if (!name) return;
+  if (classesData[name]) {
+    await showAlert(`<strong>${name}</strong> — ${lang.err_class_exists}`, {
+      title: lang.dialog_err_title || 'Помилка',
+      icon: '⚠️', stripe: 'red', iconClass: 'red-icon'
+    });
+    return;
   }
+  classesData[name] = [];
+  changeClass(name);
 }
 
-function deleteClass() {
-  if (Object.keys(classesData).length <= 1) return alert(i18n[currentLang].err_delete_last);
-  if (confirm(`${i18n[currentLang].confirm_delete} "${currentClass}"?`)) {
-    delete classesData[currentClass];
-    delete askedData[currentClass];
-    currentClass = Object.keys(classesData)[0];
-    changeClass(currentClass);
+async function deleteClass() {
+  const lang = i18n[currentLang];
+  if (Object.keys(classesData).length <= 1) {
+    await showAlert(lang.err_delete_last, {
+      title: lang.dialog_err_title || 'Помилка',
+      icon: '⚠️', stripe: 'red', iconClass: 'red-icon'
+    });
+    return;
   }
+  const ok = await showConfirm(
+    `${lang.dialog_delete_msg || 'Клас буде видалено назавжди:'} <strong>${currentClass}</strong>`,
+    {
+      title: lang.dialog_delete_title || 'Видалити клас?',
+      confirmLabel: lang.btn_delete_confirm || 'Видалити',
+      cancelLabel: lang.btn_cancel || 'Скасувати',
+    }
+  );
+  if (!ok) return;
+  delete classesData[currentClass];
+  delete askedData[currentClass];
+  currentClass = Object.keys(classesData)[0];
+  changeClass(currentClass);
+}
+
+async function renameClass() {
+  const lang = i18n[currentLang];
+  const newName = await showPrompt(
+    `${lang.dialog_rename_msg || 'Поточна назва:'} <strong>${currentClass}</strong>`,
+    {
+      title: lang.dialog_rename_title || 'Перейменувати клас',
+      icon: '✏️',
+      stripe: 'accent',
+      iconClass: 'accent-icon',
+      inputLabel: lang.dialog_class_name_label || 'Нова назва',
+      defaultValue: currentClass,
+      okLabel: lang.dialog_rename_ok || 'Перейменувати',
+      okClass: 'accent-btn',
+    }
+  );
+  if (!newName) return;
+  if (newName === currentClass) {
+    await showAlert(lang.err_rename_same, {
+      title: lang.dialog_err_title || 'Помилка',
+      icon: '⚠️', stripe: 'neutral', iconClass: 'info-icon'
+    });
+    return;
+  }
+  if (classesData[newName]) {
+    await showAlert(`<strong>${newName}</strong> — ${lang.err_class_exists}`, {
+      title: lang.dialog_err_title || 'Помилка',
+      icon: '⚠️', stripe: 'red', iconClass: 'red-icon'
+    });
+    return;
+  }
+  const newClassesData = {};
+  Object.keys(classesData).forEach(cls => {
+    newClassesData[cls === currentClass ? newName : cls] = classesData[cls];
+  });
+  classesData = newClassesData;
+  if (askedData[currentClass]) {
+    askedData[newName] = askedData[currentClass];
+    delete askedData[currentClass];
+  }
+  currentClass = newName;
+  renderClassSelect();
+  saveToStorage();
+  updateAll();
 }
 
 function clearAsked() { 
@@ -1012,11 +1356,11 @@ function toggleTimer() {
   timerRunning = !timerRunning;
 }
 
-function generateGroups() {
+async function generateGroups() {
   const students = [...(classesData[currentClass] || [])];
-  if (students.length === 0) return alert(i18n[currentLang].err_empty_students);
+  if (students.length === 0) { await showAlert(i18n[currentLang].err_empty_students, { title: i18n[currentLang].dialog_err_title, icon: '⚠️', stripe: 'red', iconClass: 'red-icon' }); return; }
   const count = parseInt(document.getElementById('group-count').value);
-  if (isNaN(count) || count < 2) return alert(i18n[currentLang].err_min_teams);
+  if (isNaN(count) || count < 2) { await showAlert(i18n[currentLang].err_min_teams, { title: i18n[currentLang].dialog_err_title, icon: '⚠️', stripe: 'red', iconClass: 'red-icon' }); return; }
   for (let i = students.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [students[i], students[j]] = [students[j], students[i]];
@@ -1130,11 +1474,21 @@ document.addEventListener('fullscreenchange', () => {
     exitIcon.style.display = 'block';
     btn.title = i18n[currentLang].fs_exit;
     btn.setAttribute('data-i18n-title', 'fs_exit');
+
+    requestAnimationFrame(() => {
+      const wrap = document.querySelector('.wrap');
+      const screenH = window.screen.height;
+      const wrapH = wrap.offsetHeight;
+      const pad = Math.max(0, Math.round((screenH - wrapH) / 2));
+      document.body.style.paddingTop = pad + 'px';
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
   } else {
     enterIcon.style.display = 'block';
     exitIcon.style.display = 'none';
     btn.title = i18n[currentLang].fs_enter;
     btn.setAttribute('data-i18n-title', 'fs_enter');
+    document.body.style.paddingTop = '';
   }
 });
 

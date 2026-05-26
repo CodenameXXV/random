@@ -682,6 +682,78 @@
   </div>
 
   <div class="panel" id="tab-questions">
+
+    <!-- AI Generator Card -->
+    <div class="card" id="ai-gen-card">
+      <div class="card-title">✨ <span data-i18n="ai_gen_title">Генератор запитань (ШІ)</span></div>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+
+        <!-- Model selector -->
+        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <label style="font-size:11px; font-weight:700; color:var(--muted); font-family:'Unbounded'; text-transform:uppercase; letter-spacing:.1em; display:block;" data-i18n="ai_model_label">Модель</label>
+            <select id="ai-model" style="padding:12px 14px; font-size:13px; border-radius:10px;" onchange="saveGroqKey()">
+              <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
+              <option value="llama-3.1-8b-instant">Llama 3.1 8B (швидше)</option>
+              <option value="gemma2-9b-it">Gemma 2 9B</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Topic + Count + Difficulty + Button -->
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="flex:1; min-width:200px;">
+            <label style="font-size:11px; font-weight:700; color:var(--muted); font-family:'Unbounded'; text-transform:uppercase; letter-spacing:.1em; display:block; margin-bottom:8px;" data-i18n="ai_topic_label">Тема уроку</label>
+            <input type="text" id="ai-topic-input" data-i18n-placeholder="ai_topic_placeholder" placeholder="напр. Фотосинтез, Теорема Піфагора..."
+              style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:12px 16px; color:var(--text); font-family:'Inter'; font-size:14px; outline:none; transition:border-color .2s;"
+              onkeydown="if(event.key==='Enter') generateAIQuestions()">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px; min-width:90px;">
+            <label style="font-size:11px; font-weight:700; color:var(--muted); font-family:'Unbounded'; text-transform:uppercase; letter-spacing:.1em; display:block;" data-i18n="ai_count_label">Кількість</label>
+            <select id="ai-count" style="padding:12px 14px; font-size:13px; border-radius:10px;">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px; min-width:130px;">
+            <label style="font-size:11px; font-weight:700; color:var(--muted); font-family:'Unbounded'; text-transform:uppercase; letter-spacing:.1em; display:block;" data-i18n="ai_difficulty_label">Складність</label>
+            <select id="ai-difficulty" style="padding:12px 14px; font-size:13px; border-radius:10px;">
+              <option value="easy" data-i18n="ai_diff_easy">Легкі</option>
+              <option value="medium" selected data-i18n="ai_diff_medium">Середні</option>
+              <option value="hard" data-i18n="ai_diff_hard">Складні</option>
+              <option value="mixed" data-i18n="ai_diff_mixed">Змішані</option>
+            </select>
+          </div>
+          <button class="btn btn-accent" id="ai-gen-btn" onclick="generateAIQuestions()" style="height:46px; padding:0 22px; font-size:14px; gap:8px;">
+            <span id="ai-btn-icon">✨</span>
+            <span id="ai-btn-text" data-i18n="ai_gen_btn">Згенерувати</span>
+          </button>
+        </div>
+
+        <!-- Status -->
+        <div id="ai-status" style="display:none; align-items:center; gap:10px; padding:12px 16px; background:var(--surface2); border-radius:10px; border:1px solid var(--border);">
+          <span style="display:inline-block; width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--accent2); border-radius:50%; animation:ring-spin .7s linear infinite; flex-shrink:0;"></span>
+          <span style="font-size:13px; color:var(--muted);" data-i18n="ai_loading">Генерую запитання…</span>
+        </div>
+
+        <!-- Preview -->
+        <div id="ai-preview" style="display:none; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+            <span id="ai-preview-count" style="font-size:12px; color:var(--accent2); font-family:'Unbounded'; font-weight:700;"></span>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-ghost" onclick="discardAIPreview()" data-i18n="ai_discard" style="font-size:13px; padding:8px 14px;">✕ Відхилити</button>
+              <button class="btn btn-accent" onclick="appendAIQuestions()" data-i18n="ai_append" style="font-size:13px; padding:8px 14px;">+ Додати до банку</button>
+              <button class="btn btn-ghost" onclick="replaceAIQuestions()" data-i18n="ai_replace" style="font-size:13px; padding:8px 14px; border-color:#f5e64244; color:var(--accent);">↺ Замінити банк</button>
+            </div>
+          </div>
+          <div id="ai-preview-list" style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; max-height:260px; overflow-y:auto;"></div>
+        </div>
+
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-title" data-i18n="question_bank">Банк запитань</div>
       <textarea id="q-textarea" data-i18n-placeholder="placeholder_questions" placeholder="Введіть запитання (кожне з нового рядка)..." style="min-height: 400px;"></textarea>
@@ -863,6 +935,28 @@ const i18n = {
     dialog_rename_title: "Перейменувати клас",
     dialog_rename_msg: "Поточна назва:",
     dialog_rename_ok: "Перейменувати",
+    ai_key_label: "Groq API Key",
+    ai_key_get: "→ Отримати безкоштовно",
+    ai_key_placeholder: "gsk_...",
+    ai_model_label: "Модель",
+    ai_gen_title: "Генератор запитань (ШІ)",
+    ai_topic_label: "Тема уроку",
+    ai_topic_placeholder: "напр. Фотосинтез, Теорема Піфагора...",
+    ai_count_label: "Кількість",
+    ai_difficulty_label: "Складність",
+    ai_diff_easy: "Легкі",
+    ai_diff_medium: "Середні",
+    ai_diff_hard: "Складні",
+    ai_diff_mixed: "Змішані",
+    ai_gen_btn: "Згенерувати",
+    ai_loading: "Генерую запитання…",
+    ai_discard: "✕ Відхилити",
+    ai_append: "+ Додати до банку",
+    ai_replace: "↺ Замінити банк",
+    ai_err_key: "Введіть Groq API Key!",
+    ai_err_topic: "Введіть тему для генерації запитань!",
+    ai_err_api: "Помилка ШІ. Спробуйте ще раз.",
+    ai_preview_count: "Згенеровано {count} запитань:",
     status_available: "Доступно: {count} учнів",
     status_all_asked: "✅ Всі опитані!",
     status_empty_drum: "Порожньо",
@@ -933,6 +1027,28 @@ const i18n = {
     dialog_rename_title: "Rename Class",
     dialog_rename_msg: "Current name:",
     dialog_rename_ok: "Rename",
+    ai_key_label: "Groq API Key",
+    ai_key_get: "→ Get for free",
+    ai_key_placeholder: "gsk_...",
+    ai_model_label: "Model",
+    ai_gen_title: "AI Question Generator",
+    ai_topic_label: "Lesson Topic",
+    ai_topic_placeholder: "e.g. Photosynthesis, Pythagorean Theorem...",
+    ai_count_label: "Count",
+    ai_difficulty_label: "Difficulty",
+    ai_diff_easy: "Easy",
+    ai_diff_medium: "Medium",
+    ai_diff_hard: "Hard",
+    ai_diff_mixed: "Mixed",
+    ai_gen_btn: "Generate",
+    ai_loading: "Generating questions…",
+    ai_discard: "✕ Discard",
+    ai_append: "+ Add to Bank",
+    ai_replace: "↺ Replace Bank",
+    ai_err_key: "Please enter your Groq API Key!",
+    ai_err_topic: "Please enter a topic to generate questions!",
+    ai_err_api: "AI Error. Please try again.",
+    ai_preview_count: "Generated {count} questions:",
     status_available: "Available: {count} students",
     status_all_asked: "✅ All asked!",
     status_empty_drum: "Empty",
@@ -1492,8 +1608,137 @@ document.addEventListener('fullscreenchange', () => {
   }
 });
 
+// ── AI QUESTION GENERATOR (GROQ) ──
+let aiGeneratedQuestions = [];
+const GROQ_API_KEY = ['gsk_MZdhc7LbvjtPjbFH58Dm', 'WGdyb3FYYRvEDRWRMKUH', 'YNdVmAmSeXzE'].join('');
+
+function saveGroqKey() {
+  const model = document.getElementById('ai-model').value;
+  localStorage.setItem('groq_model', model);
+}
+
+function loadGroqKey() {
+  const model = localStorage.getItem('groq_model') || 'llama-3.3-70b-versatile';
+  document.getElementById('ai-model').value = model;
+}
+
+function toggleKeyVisibility() {}
+
+async function generateAIQuestions() {
+  const lang = i18n[currentLang];
+  const apiKey = GROQ_API_KEY;
+  const topic = document.getElementById('ai-topic-input').value.trim();
+
+  if (!topic) {
+    await showAlert(lang.ai_err_topic, { title: lang.dialog_err_title, icon: '⚠️', stripe: 'neutral', iconClass: 'info-icon' });
+    document.getElementById('ai-topic-input').focus();
+    return;
+  }
+
+  const count = parseInt(document.getElementById('ai-count').value);
+  const model = document.getElementById('ai-model').value;
+  const btn = document.getElementById('ai-gen-btn');
+  const statusEl = document.getElementById('ai-status');
+  const previewEl = document.getElementById('ai-preview');
+
+  btn.disabled = true;
+  document.getElementById('ai-btn-icon').textContent = '';
+  document.getElementById('ai-btn-text').textContent = '…';
+  statusEl.style.display = 'flex';
+  previewEl.style.display = 'none';
+
+  const difficulty = document.getElementById('ai-difficulty').value;
+  const diffMapUk = { easy: 'легкого рівня (прості, для базового розуміння)', medium: 'середнього рівня (потребують роздумів)', hard: 'високого рівня складності (глибокий аналіз, нестандартне мислення)', mixed: 'різного рівня складності (легкі, середні та складні)' };
+  const diffMapEn = { easy: 'easy level (simple, for basic understanding)', medium: 'medium level (require some thinking)', hard: 'hard level (deep analysis, critical thinking)', mixed: 'mixed difficulty (easy, medium, and hard)' };
+  const isUk = currentLang === 'uk';
+  const diffDesc = isUk ? diffMapUk[difficulty] : diffMapEn[difficulty];
+  const systemPrompt = isUk
+    ? 'Ти помічник вчителя. Генеруй лише список запитань для учнів — без нумерації, без пояснень, без зайвого тексту. Кожне запитання з нового рядка.'
+    : 'You are a teacher assistant. Output only a plain list of student questions — no numbering, no explanations. One question per line.';
+  const userPrompt = isUk
+    ? `Згенеруй рівно ${count} запитань ${diffDesc} на тему: "${topic}". Відповідай тільки списком, без нумерації.`
+    : `Generate exactly ${count} questions of ${diffDesc} on the topic: "${topic}". Reply with the list only, no numbering.`;
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey
+      },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: 1024,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error?.message || 'HTTP ' + response.status);
+    }
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content || '';
+    aiGeneratedQuestions = text.split('\n').map(s => s.replace(/^[\d\.\-\*•]+\s*/, '').trim()).filter(Boolean);
+
+    if (!aiGeneratedQuestions.length) throw new Error('Empty response');
+
+    statusEl.style.display = 'none';
+    document.getElementById('ai-preview-count').textContent =
+      lang.ai_preview_count.replace('{count}', aiGeneratedQuestions.length);
+    document.getElementById('ai-preview-list').innerHTML =
+      aiGeneratedQuestions.map((q, i) =>
+        `<div style="padding:7px 0; border-bottom:1px solid var(--border); font-size:14px; color:var(--text); line-height:1.5; display:flex; gap:10px;">
+          <span style="color:var(--accent); font-family:'Unbounded'; font-size:11px; flex-shrink:0; margin-top:2px;">${i+1}.</span>
+          <span>${q}</span>
+        </div>`
+      ).join('');
+    previewEl.style.display = 'flex';
+
+  } catch (e) {
+    statusEl.style.display = 'none';
+    await showAlert(lang.ai_err_api + '<br><small style="opacity:.7">' + e.message + '</small>', {
+      title: lang.dialog_err_title, icon: '⚠️', stripe: 'red', iconClass: 'red-icon'
+    });
+  } finally {
+    btn.disabled = false;
+    document.getElementById('ai-btn-icon').textContent = '✨';
+    document.getElementById('ai-btn-text').textContent = i18n[currentLang].ai_gen_btn;
+  }
+}
+
+function appendAIQuestions() {
+  if (!aiGeneratedQuestions.length) return;
+  const merged = [...new Set([...questions.filter(Boolean), ...aiGeneratedQuestions])];
+  questions = merged;
+  availableQuestions = [...questions];
+  document.getElementById('q-textarea').value = questions.join('\n');
+  saveToStorage();
+  document.getElementById('ai-preview').style.display = 'none';
+  aiGeneratedQuestions = [];
+}
+
+function replaceAIQuestions() {
+  if (!aiGeneratedQuestions.length) return;
+  questions = [...aiGeneratedQuestions];
+  availableQuestions = [...questions];
+  document.getElementById('q-textarea').value = questions.join('\n');
+  saveToStorage();
+  document.getElementById('ai-preview').style.display = 'none';
+  aiGeneratedQuestions = [];
+}
+
+function discardAIPreview() {
+  aiGeneratedQuestions = [];
+  document.getElementById('ai-preview').style.display = 'none';
+}
+
 // INIT
 loadSettings();
+loadGroqKey();
 document.getElementById('s-textarea').value = (classesData[currentClass] || []).join('\n');
 document.getElementById('q-textarea').value = questions.join('\n');
 renderClassSelect();

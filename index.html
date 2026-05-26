@@ -600,6 +600,7 @@
 
   <div class="tabs">
     <button class="tab active" onclick="switchTab('spin',this)" data-i18n="tab_spin">🎰 Рулетка</button>
+    <button class="tab" onclick="switchTab('solo',this); initSoloMode()" data-i18n="tab_solo">🎯 Соло</button>
     <button class="tab" onclick="switchTab('students',this)" data-i18n="tab_students">👥 Учні</button>
     <button class="tab" onclick="switchTab('questions',this)" data-i18n="tab_questions">❓ Запитання</button>
   </div>
@@ -759,6 +760,56 @@
       <textarea id="q-textarea" data-i18n-placeholder="placeholder_questions" placeholder="Введіть запитання (кожне з нового рядка)..." style="min-height: 400px;"></textarea>
     </div>
   </div>
+  <div class="panel" id="tab-solo">
+    <div class="spin-layout" style="max-width:1000px; margin:0 auto;">
+
+      <!-- LEFT: Question Drum -->
+      <div class="drum-card">
+        <div style="font-size:12px; color:var(--accent2); font-family:'Unbounded'; text-transform:uppercase; letter-spacing:.1em;" data-i18n="solo_question_label">❓ Запитання</div>
+
+        <div style="position:relative; width:200px; height:200px; flex-shrink:0; margin-top:10px;">
+          <div class="drum-ring-wrap" id="solo-drum-ring">
+            <div class="drum-ring-inner" style="border-top-color: var(--accent2); border-right-color: var(--accent);"></div>
+          </div>
+          <div class="drum-outer" style="border-color: var(--border);">
+            <div class="drum-pointer" style="border-top-color: var(--accent2); filter: drop-shadow(0 2px 6px rgba(66,245,161,.5));"></div>
+            <div class="drum-line top" style="background: var(--accent2); box-shadow: 0 0 10px var(--accent2);"></div>
+            <div class="drum-line bottom" style="background: var(--accent2); box-shadow: 0 0 10px var(--accent2);"></div>
+            <div class="drum-viewport">
+              <div class="drum-strip" id="solo-drum-strip"></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="big-spin" id="solo-spin-btn" onclick="soloNextQuestion()" data-i18n="solo_spin_btn" style="background:var(--accent2); box-shadow: 0 0 30px rgba(66,245,161,0.25); color:#0f0f0f;" disabled>
+          🎲 КРУТИТИ!
+        </button>
+        <div id="solo-status" class="status-msg"></div>
+      </div>
+
+      <!-- RIGHT: Result + Timer -->
+      <div class="result-panel">
+        <!-- Question result box -->
+        <div class="hero-result" id="solo-question-box" style="border-color: var(--accent2); background: linear-gradient(135deg, rgba(66,245,161,.08), rgba(66,245,161,.03));">
+          <div class="hero-result::before" style="background: radial-gradient(ellipse at center, rgba(66,245,161,.1) 0%, transparent 70%);"></div>
+          <div class="result-label" style="color:var(--accent2);" data-i18n="solo_question_label">❓ Запитання</div>
+          <div id="solo-question-text" class="result-name" style="color:var(--accent2); font-size:clamp(16px,2.5vw,22px); text-shadow: 0 4px 20px rgba(66,245,161,0.5); line-height:1.4;" data-i18n="solo_no_questions">Немає запитань</div>
+          <div id="solo-q-counter" style="font-size:12px; color:var(--muted); font-family:'Unbounded'; z-index:1;"></div>
+        </div>
+
+        <!-- Timer (shown only when auto-timer is enabled in settings) -->
+        <div class="timer-box" id="solo-timer-box">
+          <div class="timer-display" id="solo-timer-display">00:30</div>
+          <div class="timer-controls">
+            <button class="btn btn-accent" id="solo-timer-start-btn" onclick="toggleSoloTimer()" data-i18n="btn_start">▶ СТАРТ</button>
+            <button class="btn btn-ghost" onclick="resetSoloTimer()" data-i18n="btn_reset">↺ СКИД</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
 <!-- ── ALERT DIALOG ── -->
@@ -963,7 +1014,17 @@ const i18n = {
     status_empty_list: "Список порожній.",
     err_empty_students: "Список учнів порожній!",
     err_min_teams: "Вкажіть мінімум 2 команди",
-    team_prefix: "Команда"
+    team_prefix: "Команда",
+    tab_solo: "🎯 Соло",
+    solo_title: "🎯 Режим Соло",
+    solo_student_label: "Учень",
+    solo_question_label: "❓ Запитання",
+    solo_no_questions: "Немає запитань у банку",
+    solo_no_students: "Список учнів порожній",
+    solo_next_btn: "➡ НАСТУПНЕ ПИТАННЯ",
+    solo_all_done: "✅ Всі питання задані! Починаємо знову.",
+    solo_q_counter: "Питання {current} з {total}",
+    solo_spin_btn: "🎲 КРУТИТИ!"
   },
   en: {
     title: "Class Roulette + Timer",
@@ -1055,7 +1116,17 @@ const i18n = {
     status_empty_list: "List is empty.",
     err_empty_students: "Student list is empty!",
     err_min_teams: "Specify at least 2 teams",
-    team_prefix: "Team"
+    team_prefix: "Team",
+    tab_solo: "🎯 Solo",
+    solo_title: "🎯 Solo Mode",
+    solo_student_label: "Student",
+    solo_question_label: "❓ Question",
+    solo_no_questions: "No questions in the bank",
+    solo_no_students: "Student list is empty",
+    solo_next_btn: "➡ NEXT QUESTION",
+    solo_all_done: "✅ All questions asked! Starting over.",
+    solo_q_counter: "Question {current} of {total}",
+    solo_spin_btn: "🎲 SPIN!"
   }
 };
 
@@ -1734,6 +1805,238 @@ function replaceAIQuestions() {
 function discardAIPreview() {
   aiGeneratedQuestions = [];
   document.getElementById('ai-preview').style.display = 'none';
+}
+
+// ── SOLO MODE ──
+let soloAvailableQuestions = [];
+let soloTimerInterval = null;
+let soloTimeLeft = 30;
+let soloTimerRunning = false;
+let soloQAsked = 0;
+let soloSpinning = false;
+
+// ── SOLO DRUM (Question Roulette) ──
+function soloInitDrum() {
+  const strip = document.getElementById('solo-drum-strip');
+  if (!strip) return;
+  strip.innerHTML = '';
+  if (!questions.length) return;
+
+  // Build circular list for drum display
+  const display = [];
+  for (let i = 0; i < 30; i++) display.push(questions[i % questions.length]);
+
+  display.forEach(q => {
+    const el = document.createElement('div');
+    el.className = 'drum-item';
+    el.textContent = q.length > 18 ? q.slice(0, 16) + '…' : q;
+    strip.appendChild(el);
+  });
+
+  soloDrumSetPosition(0, false);
+}
+
+let soloDrumOffset = 0;
+const SOLO_ITEM_H = 44;
+
+function soloDrumSetPosition(offsetPx, animate) {
+  const strip = document.getElementById('solo-drum-strip');
+  if (!strip) return;
+  strip.style.transition = animate ? 'top 0.08s linear' : 'none';
+  strip.style.top = (100 - SOLO_ITEM_H * 2 - offsetPx) + 'px';
+  soloDrumHighlight();
+}
+
+function soloDrumHighlight() {
+  const strip = document.getElementById('solo-drum-strip');
+  if (!strip) return;
+  const items = strip.querySelectorAll('.drum-item');
+  const top = parseFloat(strip.style.top);
+  const center = 100 - top;
+  items.forEach((el, i) => {
+    const itemCenter = i * SOLO_ITEM_H + SOLO_ITEM_H / 2;
+    const dist = Math.abs(itemCenter - center);
+    el.classList.remove('hi', 'mid');
+    if (dist < SOLO_ITEM_H * 0.5) el.classList.add('hi');
+    else if (dist < SOLO_ITEM_H * 1.5) el.classList.add('mid');
+  });
+}
+
+function soloSpinDrum(targetQ, onDone) {
+  const ring = document.getElementById('solo-drum-ring');
+  ring.classList.add('go');
+  soloSpinning = true;
+
+  const strip = document.getElementById('solo-drum-strip');
+  const items = strip.querySelectorAll('.drum-item');
+
+  // Find target index in current display items
+  let targetIdx = -1;
+  items.forEach((el, i) => {
+    if (i > 5 && el.textContent === (targetQ.length > 18 ? targetQ.slice(0, 16) + '…' : targetQ) && targetIdx === -1) {
+      targetIdx = i;
+    }
+  });
+  if (targetIdx === -1) targetIdx = 10;
+
+  const totalScroll = (targetIdx - 2) * SOLO_ITEM_H;
+  const duration = 2200 + Math.random() * 800;
+  const start = performance.now();
+  const startOffset = soloDrumOffset;
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function animate(now) {
+    const elapsed = now - start;
+    const t = Math.min(elapsed / duration, 1);
+    const easedT = easeOut(t);
+    const current = startOffset + totalScroll * easedT;
+    soloDrumOffset = current;
+    soloDrumSetPosition(current % (questions.length * SOLO_ITEM_H), false);
+
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      ring.classList.remove('go');
+      soloSpinning = false;
+      onDone();
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function initSoloMode() {
+  // Force questions on
+  document.getElementById('toggle-questions-quick').checked = true;
+  syncQuickToggleVisual();
+
+  // Reset question pool
+  soloAvailableQuestions = [...questions];
+  soloQAsked = 0;
+
+  // Init drum
+  soloInitDrum();
+
+  const spinBtn = document.getElementById('solo-spin-btn');
+  if (spinBtn) spinBtn.disabled = !questions.length;
+
+  // Reset question display
+  const qText = document.getElementById('solo-question-text');
+  const counter = document.getElementById('solo-q-counter');
+  const qBox = document.getElementById('solo-question-box');
+  if (qText) qText.textContent = questions.length ? '—' : i18n[currentLang].solo_no_questions;
+  if (counter) counter.textContent = questions.length
+    ? i18n[currentLang].solo_q_counter.replace('{current}', 0).replace('{total}', questions.length)
+    : '';
+  if (qBox) qBox.classList.remove('revealed');
+
+  resetSoloTimer();
+
+  // Show timer only if auto-timer is enabled in settings
+  const timerBox = document.getElementById('solo-timer-box');
+  if (document.getElementById('toggle-timer-auto').checked) {
+    timerBox.classList.add('show');
+  } else {
+    timerBox.classList.remove('show');
+  }
+}
+
+function soloNextQuestion() {
+  if (!questions.length || soloSpinning) return;
+
+  if (soloAvailableQuestions.length === 0) {
+    soloAvailableQuestions = [...questions];
+    document.getElementById('solo-status').textContent = i18n[currentLang].solo_all_done;
+    setTimeout(() => { document.getElementById('solo-status').textContent = ''; }, 3000);
+  }
+
+  const idx = Math.floor(Math.random() * soloAvailableQuestions.length);
+  const q = soloAvailableQuestions.splice(idx, 1)[0];
+  soloQAsked++;
+
+  // Re-populate drum strip with fresh shuffled data ending on target
+  const strip = document.getElementById('solo-drum-strip');
+  strip.innerHTML = '';
+  const display = [];
+  for (let i = 0; i < 30; i++) display.push(questions[i % questions.length]);
+  // Put target at position ~20
+  display[20] = q;
+  display.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'drum-item';
+    el.textContent = item.length > 18 ? item.slice(0, 16) + '…' : item;
+    strip.appendChild(el);
+  });
+  soloDrumOffset = 0;
+  soloDrumSetPosition(0, false);
+
+  const qBox = document.getElementById('solo-question-box');
+  const qText = document.getElementById('solo-question-text');
+  const counter = document.getElementById('solo-q-counter');
+
+  qBox.classList.remove('revealed');
+  qText.style.opacity = '0';
+  qText.style.transform = 'scale(.7) translateY(20px)';
+
+  document.getElementById('solo-spin-btn').disabled = true;
+
+  soloSpinDrum(q, () => {
+    qText.textContent = q;
+    counter.textContent = i18n[currentLang].solo_q_counter
+      .replace('{current}', soloQAsked).replace('{total}', questions.length);
+    qBox.classList.add('revealed');
+
+    // trigger CSS transition
+    requestAnimationFrame(() => {
+      qText.style.transition = 'opacity .4s .1s, transform .4s .1s';
+      qText.style.opacity = '1';
+      qText.style.transform = 'scale(1) translateY(0)';
+    });
+
+    document.getElementById('solo-spin-btn').disabled = false;
+    resetSoloTimer();
+  });
+}
+
+function resetSoloTimer() {
+  clearInterval(soloTimerInterval);
+  soloTimerRunning = false;
+  soloTimeLeft = parseInt(document.getElementById('timer-duration').value);
+  updateSoloTimerDisplay();
+  document.getElementById('solo-timer-start-btn').textContent = i18n[currentLang].btn_start;
+  document.getElementById('solo-timer-display').classList.remove('warning');
+  // Show/hide timer box based on settings
+  const timerBox = document.getElementById('solo-timer-box');
+  if (timerBox) {
+    if (document.getElementById('toggle-timer-auto').checked) {
+      timerBox.classList.add('show');
+    } else {
+      timerBox.classList.remove('show');
+    }
+  }
+}
+
+function updateSoloTimerDisplay() {
+  const m = Math.floor(soloTimeLeft / 60).toString().padStart(2, '0');
+  const s = (soloTimeLeft % 60).toString().padStart(2, '0');
+  document.getElementById('solo-timer-display').textContent = `${m}:${s}`;
+}
+
+function toggleSoloTimer() {
+  if (soloTimerRunning) {
+    clearInterval(soloTimerInterval);
+    soloTimerRunning = false;
+    document.getElementById('solo-timer-start-btn').textContent = i18n[currentLang].btn_resume;
+  } else {
+    soloTimerRunning = true;
+    document.getElementById('solo-timer-start-btn').textContent = i18n[currentLang].btn_pause;
+    soloTimerInterval = setInterval(() => {
+      soloTimeLeft--;
+      if (soloTimeLeft <= 5) document.getElementById('solo-timer-display').classList.add('warning');
+      if (soloTimeLeft <= 0) { clearInterval(soloTimerInterval); soloTimerRunning = false; soloTimeLeft = 0; }
+      updateSoloTimerDisplay();
+    }, 1000);
+  }
 }
 
 // INIT

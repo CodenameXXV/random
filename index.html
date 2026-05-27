@@ -229,11 +229,10 @@
 
   .drum-viewport {
     position: absolute; inset: 0;
-    display: flex; align-items: flex-start; justify-content: center;
     overflow: hidden; border-radius: 50%;
   }
   .drum-strip {
-    display: flex; flex-direction: column; align-items: center;
+    display: flex; flex-direction: column; align-items: stretch;
     width: 100%; position: absolute; left: 0; right: 0;
     transition: none;
   }
@@ -241,15 +240,23 @@
     height: 44px; width: 100%; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700;
-    color: var(--text); padding: 0 14px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: var(--text); box-sizing: border-box;
     opacity: .2; transition: transform 0.1s, opacity 0.1s, color 0.1s;
     transform: scale(0.9);
+  }
+  .drum-item span {
+    display: block; width: 100%; text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    padding: 0 20px; box-sizing: border-box;
   }
   .drum-item.mid { opacity: .5; transform: scale(0.95); }
   .drum-item.hi  { 
     opacity: 1; font-size: 16px; color: var(--accent); 
-    transform: scale(1.15); text-shadow: 0 0 12px rgba(245, 230, 66, 0.4);
+    transform: scale(1); text-shadow: 0 0 12px rgba(245, 230, 66, 0.4);
+  }
+  #solo-drum-strip .drum-item.hi {
+    color: var(--accent2);
+    text-shadow: 0 0 12px rgba(66, 245, 161, 0.5);
   }
 
   .big-spin {
@@ -283,6 +290,8 @@
   }
   .hero-result.revealed { border-color: var(--accent); animation: pulse-glow 1.5s ease-in-out; }
   @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 20px rgba(245,230,66,.3); } 50% { box-shadow: 0 0 40px rgba(245,230,66,.6); } }
+  #solo-question-box.revealed { border-color: var(--accent2); animation: pulse-glow-green 1.5s ease-in-out; }
+  @keyframes pulse-glow-green { 0%,100% { box-shadow: 0 0 20px rgba(66,245,161,.3); } 50% { box-shadow: 0 0 40px rgba(66,245,161,.6); } }
   
   .result-label {
     font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; 
@@ -293,6 +302,7 @@
     color: var(--accent); line-height: 1.1; opacity: 0; transform: scale(.7) translateY(20px);
     transition: opacity .4s .1s, transform .4s .1s; z-index: 1;
     text-shadow: 0 4px 20px rgba(245, 230, 66, 0.5);
+    width: 100%; text-align: center; display: block;
   }
   .hero-result.revealed .result-name { opacity: 1; transform: scale(1) translateY(0); }
 
@@ -789,11 +799,9 @@
 
       <!-- RIGHT: Result + Timer -->
       <div class="result-panel">
-        <!-- Question result box -->
-        <div class="hero-result" id="solo-question-box" style="border-color: var(--accent2); background: linear-gradient(135deg, rgba(66,245,161,.08), rgba(66,245,161,.03));">
-          <div class="hero-result::before" style="background: radial-gradient(ellipse at center, rgba(66,245,161,.1) 0%, transparent 70%);"></div>
+        <div class="hero-result" id="solo-question-box">
           <div class="result-label" style="color:var(--accent2);" data-i18n="solo_question_label">❓ Запитання</div>
-          <div id="solo-question-text" class="result-name" style="color:var(--accent2); font-size:clamp(16px,2.5vw,22px); text-shadow: 0 4px 20px rgba(66,245,161,0.5); line-height:1.4;" data-i18n="solo_no_questions">Немає запитань</div>
+          <div class="result-name" id="solo-question-text" style="color:var(--accent2); font-size:clamp(18px,3vw,28px); text-shadow: 0 4px 20px rgba(66,245,161,0.5);">—</div>
           <div id="solo-q-counter" style="font-size:12px; color:var(--muted); font-family:'Unbounded'; z-index:1;"></div>
         </div>
 
@@ -1502,10 +1510,10 @@ function highlight(scrollPx) {
 function buildDrum() {
   const avail = getAvail();
   const strip = document.getElementById('drum-strip');
-  if (!avail.length) { strip.innerHTML = `<div class="drum-item mid">${i18n[currentLang].status_empty_drum}</div>`; setTop(0); return; }
+  if (!avail.length) { strip.innerHTML = `<div class="drum-item mid"><span>${i18n[currentLang].status_empty_drum}</span></div>`; setTop(0); return; }
   let html = '';
   const reps = 15; 
-  for (let i = 0; i < reps * avail.length; i++) html += `<div class="drum-item">${avail[i % avail.length]}</div>`;
+  for (let i = 0; i < reps * avail.length; i++) html += `<div class="drum-item"><span>${avail[i % avail.length]}</span></div>`;
   strip.innerHTML = html;
   setTop(0); highlight(0);
 }
@@ -1829,7 +1837,9 @@ function soloInitDrum() {
   display.forEach(q => {
     const el = document.createElement('div');
     el.className = 'drum-item';
-    el.textContent = q.length > 18 ? q.slice(0, 16) + '…' : q;
+    const span = document.createElement('span');
+    span.textContent = q;
+    el.appendChild(span);
     strip.appendChild(el);
   });
 
@@ -1842,23 +1852,20 @@ const SOLO_ITEM_H = 44;
 function soloDrumSetPosition(offsetPx, animate) {
   const strip = document.getElementById('solo-drum-strip');
   if (!strip) return;
-  strip.style.transition = animate ? 'top 0.08s linear' : 'none';
-  strip.style.top = (100 - SOLO_ITEM_H * 2 - offsetPx) + 'px';
-  soloDrumHighlight();
+  strip.style.transition = 'none';
+  strip.style.top = (100 - SOLO_ITEM_H / 2 - offsetPx) + 'px';
+  soloDrumHighlight(offsetPx);
 }
 
-function soloDrumHighlight() {
+function soloDrumHighlight(scrollPx) {
   const strip = document.getElementById('solo-drum-strip');
   if (!strip) return;
   const items = strip.querySelectorAll('.drum-item');
-  const top = parseFloat(strip.style.top);
-  const center = 100 - top;
   items.forEach((el, i) => {
-    const itemCenter = i * SOLO_ITEM_H + SOLO_ITEM_H / 2;
-    const dist = Math.abs(itemCenter - center);
-    el.classList.remove('hi', 'mid');
-    if (dist < SOLO_ITEM_H * 0.5) el.classList.add('hi');
-    else if (dist < SOLO_ITEM_H * 1.5) el.classList.add('mid');
+    const diff = Math.abs(i * SOLO_ITEM_H - scrollPx);
+    el.className = 'drum-item';
+    if (diff < SOLO_ITEM_H * 0.5) el.classList.add('hi');
+    else if (diff < SOLO_ITEM_H * 1.5) el.classList.add('mid');
   });
 }
 
@@ -1867,22 +1874,27 @@ function soloSpinDrum(targetQ, onDone) {
   ring.classList.add('go');
   soloSpinning = true;
 
+  // Play spin sound
+  spinSound.currentTime = 0;
+  spinSound.play().catch(e => console.log('Звук заблоковано:', e));
+
   const strip = document.getElementById('solo-drum-strip');
   const items = strip.querySelectorAll('.drum-item');
 
   // Find target index in current display items
   let targetIdx = -1;
   items.forEach((el, i) => {
-    if (i > 5 && el.textContent === (targetQ.length > 18 ? targetQ.slice(0, 16) + '…' : targetQ) && targetIdx === -1) {
+    const span = el.querySelector('span');
+    if (i > 5 && span && span.textContent === targetQ && targetIdx === -1) {
       targetIdx = i;
     }
   });
   if (targetIdx === -1) targetIdx = 10;
 
-  const totalScroll = (targetIdx - 2) * SOLO_ITEM_H;
+  const totalScroll = targetIdx * SOLO_ITEM_H;
   const duration = 2200 + Math.random() * 800;
   const start = performance.now();
-  const startOffset = soloDrumOffset;
+  const startOffset = soloDrumOffset % (questions.length * SOLO_ITEM_H);
 
   function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
 
@@ -1892,13 +1904,18 @@ function soloSpinDrum(targetQ, onDone) {
     const easedT = easeOut(t);
     const current = startOffset + totalScroll * easedT;
     soloDrumOffset = current;
-    soloDrumSetPosition(current % (questions.length * SOLO_ITEM_H), false);
+    const scrollPx = current % (questions.length * SOLO_ITEM_H);
+    const strip = document.getElementById('solo-drum-strip');
+    strip.style.top = (100 - SOLO_ITEM_H / 2 - scrollPx) + 'px';
+    soloDrumHighlight(scrollPx);
 
     if (t < 1) {
       requestAnimationFrame(animate);
     } else {
       ring.classList.remove('go');
       soloSpinning = false;
+      spinSound.pause();
+      spinSound.currentTime = 0;
       onDone();
     }
   }
@@ -1964,7 +1981,9 @@ function soloNextQuestion() {
   display.forEach(item => {
     const el = document.createElement('div');
     el.className = 'drum-item';
-    el.textContent = item.length > 18 ? item.slice(0, 16) + '…' : item;
+    const span = document.createElement('span');
+    span.textContent = item;
+    el.appendChild(span);
     strip.appendChild(el);
   });
   soloDrumOffset = 0;
@@ -1975,8 +1994,8 @@ function soloNextQuestion() {
   const counter = document.getElementById('solo-q-counter');
 
   qBox.classList.remove('revealed');
-  qText.style.opacity = '0';
-  qText.style.transform = 'scale(.7) translateY(20px)';
+  // force reflow so transition fires fresh
+  void qBox.offsetWidth;
 
   document.getElementById('solo-spin-btn').disabled = true;
 
@@ -1984,13 +2003,9 @@ function soloNextQuestion() {
     qText.textContent = q;
     counter.textContent = i18n[currentLang].solo_q_counter
       .replace('{current}', soloQAsked).replace('{total}', questions.length);
-    qBox.classList.add('revealed');
 
-    // trigger CSS transition
     requestAnimationFrame(() => {
-      qText.style.transition = 'opacity .4s .1s, transform .4s .1s';
-      qText.style.opacity = '1';
-      qText.style.transform = 'scale(1) translateY(0)';
+      qBox.classList.add('revealed');
     });
 
     document.getElementById('solo-spin-btn').disabled = false;
